@@ -1,11 +1,12 @@
 name: DrugMeUp
 main: me.giinger.dmu.Drugs
-version: 0.7
+version: 0.8
 author: Giinger, hammale
 commands:
   drugmeup:
     description:
     usage: "Incorrect usage. '/drugmeup reload'"
+    
 permissions:
     drugs.*:
         description: Gives access to all DrugMeUp features
