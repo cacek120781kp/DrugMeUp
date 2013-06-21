@@ -48,14 +48,12 @@ public class Drugs extends JavaPlugin {
 		this.playerListener = new PlayerListener(this);
 	}
 
-	@Override
 	public void onDisable() {
 		pdfFile = getDescription();
 		Bukkit.getConsoleSender().sendMessage(
 				"[DrugMeUp] v" + pdfFile.getVersion() + " Disabled!");
 	}
 
-	@Override
 	public void onEnable() {
 		pdfFile = getDescription();
 		Bukkit.getConsoleSender().sendMessage(
@@ -112,6 +110,36 @@ public class Drugs extends JavaPlugin {
 		if (config.getInt("DO_NOT_TOUCH_2") == 0) {
 			config.options()
 					.header("######### Effects #########\n0 - Nausea (Screen Spin)\n1 - Zoom-In & Walk Slow\n2 - Zoom-Out & Walk Fast\n3 - Blindness\n4 - Hunger\n5 - High Jump\n6 - Sickness & Slower Hitting\n7 - Drunk (Word Scramble)\n######## Negatives ########\n0 - None\n1 - Puke\n2 - Catch on fire\n3 - Heart Attack\n4 - Overdose\n###########################");
+			config.addDefault("Effects.Nausea.MaxPower", 100);
+			config.addDefault("Effects.Nausea.MinPower", 10);
+			config.addDefault("Effects.Nausea.MaxTime", 50);
+			config.addDefault("Effects.Nausea.MinTime", 15);
+			config.addDefault("Effects.SlowWalk.MaxPower", 100);
+			config.addDefault("Effects.SlowWalk.MinPower", 10);
+			config.addDefault("Effects.SlowWalk.MaxTime", 50);
+			config.addDefault("Effects.SlowWalk.MinTime", 15);
+			config.addDefault("Effects.FastWalk.MaxPower", 100);
+			config.addDefault("Effects.FastWalk.MinPower", 10);
+			config.addDefault("Effects.FastWalk.MaxTime", 50);
+			config.addDefault("Effects.FastWalk.MinTime", 15);
+			config.addDefault("Effects.Blindness.MaxPower", 1000);
+			config.addDefault("Effects.Blindness.MinPower", 100);
+			config.addDefault("Effects.Blindness.MaxTime", 50);
+			config.addDefault("Effects.Blindness.MinTime", 15);
+			config.addDefault("Effects.Hunger.MaxPower", 1000);
+			config.addDefault("Effects.Hunger.MinPower", 100);
+			config.addDefault("Effects.Hunger.MaxTime", 50);
+			config.addDefault("Effects.Hunger.MinTime", 15);
+			config.addDefault("Effects.HighJump.MaxPower", 15);
+			config.addDefault("Effects.HighJump.MinPower", 1);
+			config.addDefault("Effects.HighJump.MaxTime", 50);
+			config.addDefault("Effects.HighJump.MinTime", 15);
+			config.addDefault("Effects.SlowHit.MaxPower", 1000);
+			config.addDefault("Effects.SlowHit.MinPower", 100);
+			config.addDefault("Effects.SlowHit.MaxTime", 50);
+			config.addDefault("Effects.SlowHit.MinTime", 15);
+			config.addDefault("Effects.Drunk.MaxTime", 50);
+			config.addDefault("Effects.Drunk.MinTime", 15);
 			config.addDefault("DrugIds.353.Effect", "2,5");
 			config.addDefault("DrugIds.353.Negatives", "1,3");
 			config.addDefault("DrugIds.353.Type", "Random");
