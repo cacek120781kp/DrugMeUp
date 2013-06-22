@@ -180,7 +180,7 @@ public class Drugs extends JavaPlugin {
 			config.addDefault("Options.EnableNegativeEffects", true);
 			config.addDefault("Options.EnableEffectMessages", true);
 			config.addDefault("Options.EnableJumpProtection", true);
-			config.addDefault("DO_NOT_TOUCH", "0.8");
+			config.addDefault("DO_NOT_TOUCH", "0.8.1");
 			config.addDefault("DO_NOT_TOUCH_2", 1);
 			config.set("DO_NOT_TOUCH_2", 1);
 			config.options().copyDefaults(true);
@@ -251,16 +251,16 @@ public class Drugs extends JavaPlugin {
 		BufferedReader br = new BufferedReader(fileRead);
 		String line;
 		// Only change this if you need to regenerate the config.
-		String check = "DO_NOT_TOUCH: '0.7'";
-		boolean b = false;
+		String check = "DO_NOT_TOUCH: '0.8'";
+		boolean needUpdate = false;
 
 		while ((line = br.readLine()) != null) {
 			if (line.equalsIgnoreCase(check)) {
-				b = true;
+				needUpdate = true;
 			}
 		}
 
-		if (!b) {
+		if (needUpdate) {
 			saveDefaultConfig2();
 			Bukkit.getConsoleSender()
 					.sendMessage(
