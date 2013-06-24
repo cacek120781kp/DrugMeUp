@@ -96,7 +96,7 @@ public class PlayerListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerChat(AsyncPlayerChatEvent e) {
-		if (plugin.getIsJump().contains(e.getPlayer().getName())) {
+		if (plugin.getDrunk().contains(e.getPlayer().getName())) {
 			String initial = e.getMessage();
 			String end = scramble(initial);
 			e.setMessage(end);
