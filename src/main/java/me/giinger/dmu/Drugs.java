@@ -18,6 +18,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class Drugs extends JavaPlugin {
@@ -155,6 +156,8 @@ public class Drugs extends JavaPlugin {
 			config.addDefault("DrugIds.40.Type", "Random");
 			config.addDefault("DrugIds.40.Smoke", false);
 			config.addDefault("DrugIds.40.DrugName", "Shrooms");
+			config.addDefault("DrugIds.40.Message",
+					"You're about to get hella trippy man.");
 			config.addDefault("DrugIds.373.Effect", "2,5");
 			config.addDefault("DrugIds.373.Negatives", "1");
 			config.addDefault("DrugIds.373.Type", "Random");
@@ -165,6 +168,12 @@ public class Drugs extends JavaPlugin {
 			config.addDefault("DrugIds.357.Type", "All");
 			config.addDefault("DrugIds.357.Smoke", true);
 			config.addDefault("DrugIds.357.DrugName", "Hash Cookies");
+			config.addDefault("DrugIds.375.Effect", "0,1,3,6");
+			config.addDefault("DrugIds.375.Negatives", "1,2,3,4");
+			config.addDefault("DrugIds.375.Type", "All");
+			config.addDefault("DrugIds.375.Smoke", true);
+			config.addDefault("DrugIds.375.DrugName", "Wild Shrooms");
+			config.addDefault("DrugIds.375.MustSneak", false);
 			config.addDefault("Chat.Broadcast.Burning",
 					"%c* %playername% bursts into flames");
 			config.addDefault("Chat.Broadcast.Death",
@@ -180,7 +189,7 @@ public class Drugs extends JavaPlugin {
 			config.addDefault("Options.EnableNegativeEffects", true);
 			config.addDefault("Options.EnableEffectMessages", true);
 			config.addDefault("Options.EnableJumpProtection", true);
-			config.addDefault("DO_NOT_TOUCH", "0.8.1");
+			config.addDefault("DO_NOT_TOUCH", "0.8.2");
 			config.addDefault("DO_NOT_TOUCH_2", 1);
 			config.set("DO_NOT_TOUCH_2", 1);
 			config.options().copyDefaults(true);
@@ -193,9 +202,9 @@ public class Drugs extends JavaPlugin {
 	public boolean onCommand(CommandSender sender, Command cmd,
 			String commandLabel, String[] args) {
 		if (cmd.getName().equalsIgnoreCase("drugmeup")) {
-			if (sender.hasPermission("drugs.reload")) {
-				if (args.length == 1) {
-					if (args[0].equalsIgnoreCase("reload")) {
+			if (args.length == 1) {
+				if (args[0].equalsIgnoreCase("reload")) {
+					if (sender.hasPermission("drugs.reload")) {
 						reloadConfig();
 						if (sender instanceof Player) {
 							sender.sendMessage(ChatColor.GREEN
@@ -205,17 +214,44 @@ public class Drugs extends JavaPlugin {
 						sender.sendMessage("[DrugMeUp] Reloaded!");
 						return true;
 					}
-				} else {
-					sender.sendMessage(ChatColor.DARK_RED
-							+ "Invalid Arguments!");
 				}
-				return false;
+			} else if (args.length == 2) {
+				if (args[0].equalsIgnoreCase("cleardrugs")) {
+					if (sender.hasPermission("drugs.cleardrugs")) {
+						Player p = Bukkit.getPlayer(args[1]);
+						if (p == null) {
+							if (sender instanceof Player)
+								sender.sendMessage(ChatColor.RED
+										+ "[DrugMeUp] '" + args[1]
+										+ "' is not online.");
+							else
+								sender.sendMessage("[DrugMeUp] '" + args[1]
+										+ "' is not online.");
+							return true;
+						} else {
+							for (PotionEffect pe : p.getActivePotionEffects())
+								p.removePotionEffect(pe.getType());
+							if (sender instanceof Player)
+								sender.sendMessage(ChatColor.GREEN
+										+ "[DrugMeUp] Cleared drug effects from '"
+										+ p.getName() + "'.");
+							else
+								sender.sendMessage("[DrugMeUp] Cleared drug effects from '"
+										+ p.getName() + "'.");
+							p.sendMessage(ChatColor.GREEN
+									+ "[DrugMeUp] All of your drug effects have been cleared!");
+							return true;
+						}
+					}
+				}
 			} else {
-				sender.sendMessage(ChatColor.DARK_RED
-						+ "You don't have permission!");
+				return false;
 			}
+		} else {
+			sender.sendMessage(ChatColor.DARK_RED
+					+ "You don't have permission!");
 		}
-		return false;
+		return true;
 	}
 
 	public String colorize(String s) {
@@ -251,7 +287,7 @@ public class Drugs extends JavaPlugin {
 		BufferedReader br = new BufferedReader(fileRead);
 		String line;
 		// Only change this if you need to regenerate the config.
-		String check = "DO_NOT_TOUCH: '0.8'";
+		String check = "DO_NOT_TOUCH: 0.8.1";
 		boolean needUpdate = false;
 
 		while ((line = br.readLine()) != null) {

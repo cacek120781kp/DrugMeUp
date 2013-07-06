@@ -10,6 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -49,31 +50,32 @@ public class PlayerListener implements Listener {
 			if (stack != null) {
 				short data = stack.getDurability();
 				if ((e.getAction().equals(Action.RIGHT_CLICK_AIR) || e
-						.getAction().equals(Action.RIGHT_CLICK_BLOCK))
-						&& (player.isSneaking())) {
+						.getAction().equals(Action.RIGHT_CLICK_BLOCK))) {
 					if (plugin.isDrug(stack.getTypeId(), data)) {
 						if (Arrays.asList(edibles).contains(stack.getTypeId())) {
 							return;
 						}
-						ItemStack old = new ItemStack(e.getPlayer()
-								.getItemInHand().getTypeId(), e.getPlayer()
-								.getItemInHand().getAmount() - 1, data);
-						e.getPlayer().setItemInHand(old);
-						gatherEffects(player, stack.getTypeId(), data);
-						plugin.getNoPlace().add(player.getName());
-						doSmoke(player, stack.getTypeId(), data);
-						if (plugin.config
-								.getBoolean("Options.EnableNegativeEffects") == true) {
-							doNegatives(player, stack.getTypeId(), data);
-						}
+						if (player.isSneaking()) {
+							ItemStack old = new ItemStack(e.getPlayer()
+									.getItemInHand().getTypeId(), e.getPlayer()
+									.getItemInHand().getAmount() - 1, data);
+							e.getPlayer().setItemInHand(old);
+							gatherEffects(player, stack.getTypeId(), data);
+							plugin.getNoPlace().add(player.getName());
+							doSmoke(player, stack.getTypeId(), data);
+							if (plugin.config
+									.getBoolean("Options.EnableNegativeEffects") == true) {
+								doNegatives(player, stack.getTypeId(), data);
+							}
 
-						Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
-								new BukkitRunnable() {
-									public void run() {
-										plugin.getNoPlace().remove(
-												player.getName());
-									}
-								}, 20);
+							Bukkit.getScheduler().scheduleSyncDelayedTask(
+									plugin, new BukkitRunnable() {
+										public void run() {
+											plugin.getNoPlace().remove(
+													player.getName());
+										}
+									}, 20);
+						}
 					}
 				}
 			}
@@ -117,21 +119,43 @@ public class PlayerListener implements Listener {
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onPlayerItemConsume(PlayerItemConsumeEvent e) {
+	public void onPlayerItemConsume(final PlayerItemConsumeEvent e) {
 		Player p = e.getPlayer();
 		ItemStack i = e.getItem();
-		if (p.isSneaking())
+		if (i.getType() == Material.MILK_BUCKET) {
 			if (plugin.isDrug(i.getTypeId(), i.getDurability())) {
-				ItemStack old = new ItemStack(e.getPlayer().getItemInHand()
-						.getTypeId(),
-						e.getPlayer().getItemInHand().getAmount() - 1,
-						i.getDurability());
-				e.getPlayer().setItemInHand(old);
-				gatherEffects(p, i.getTypeId(), i.getDurability());
-				doSmoke(p, i.getTypeId(), i.getDurability());
-				if (plugin.config.getBoolean("Options.EnableNegativeEffects") == true)
-					doNegatives(p, i.getTypeId(), i.getDurability());
+				ItemStack milk = new ItemStack(Material.MILK_BUCKET, 1);
+				for (ItemStack i2 : p.getInventory().getContents()) {
+					if (i2 != null) {
+						if (i2 == milk) {
+							p.getInventory().remove(i2);
+						}
+					}
+				}
+				e.setCancelled(true);
 			}
+		}
+		if (plugin.config.getBoolean("DrugIds." + i.getTypeId() + ".MustSneak") == true) {
+			if (plugin.isDrug(i.getTypeId(), i.getDurability()))
+				if (p.isSneaking()) {
+					doDrug(e);
+				}
+		} else {
+			doDrug(e);
+		}
+	}
+
+	public void doDrug(PlayerItemConsumeEvent e) {
+		Player p = e.getPlayer();
+		ItemStack i = e.getItem();
+		ItemStack old = new ItemStack(
+				e.getPlayer().getItemInHand().getTypeId(), e.getPlayer()
+						.getItemInHand().getAmount() - 1, i.getDurability());
+		e.getPlayer().setItemInHand(old);
+		gatherEffects(p, i.getTypeId(), i.getDurability());
+		doSmoke(p, i.getTypeId(), i.getDurability());
+		if (plugin.config.getBoolean("Options.EnableNegativeEffects") == true)
+			doNegatives(p, i.getTypeId(), i.getDurability());
 	}
 
 	public void doSmoke(Player p, int id, short dmg) {
@@ -235,14 +259,35 @@ public class PlayerListener implements Listener {
 		String ond = "";
 
 		if (dura <= 0) {
-			ond = plugin.config.getString("Chat.Self.TakeDrugs").replaceAll(
-					"%drugname%",
-					plugin.config.getString("DrugIds." + itemi + ".DrugName"));
+			if (plugin.config.getString("DrugIds." + itemi + ".Message") == null) {
+				ond = plugin.config.getString("Chat.Self.TakeDrugs")
+						.replaceAll(
+								"%drugname%",
+								plugin.config.getString("DrugIds." + itemi
+										+ ".DrugName"));
+			} else {
+				ond = plugin.config.getString("DrugIds." + itemi + ".Message")
+						.replaceAll(
+								"%drugname%",
+								plugin.config.getString("DrugIds." + itemi
+										+ ".DrugName"));
+			}
 		} else {
-			ond = plugin.config.getString("Chat.Self.TakeDrugs").replaceAll(
-					"%drugname%",
-					plugin.config.getString("DrugIds." + itemi + ":" + dura
-							+ ".DrugName"));
+			if (plugin.config.getString("DrugIds." + itemi + ":" + dura
+					+ ".Message") == null) {
+				ond = plugin.config.getString("Chat.Self.TakeDrugs")
+						.replaceAll(
+								"%drugname%",
+								plugin.config.getString("DrugIds." + itemi
+										+ ":" + dura + ".DrugName"));
+			} else {
+				ond = plugin.config.getString(
+						"DrugIds." + itemi + ":" + dura + ".Message")
+						.replaceAll(
+								"%drugname%",
+								plugin.config.getString("DrugIds." + itemi
+										+ ":" + dura + ".DrugName"));
+			}
 		}
 
 		ond = ond.replaceAll("%playername%", p.getName());

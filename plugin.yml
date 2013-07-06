@@ -1,11 +1,11 @@
 name: DrugMeUp
 main: me.giinger.dmu.Drugs
-version: 0.8.1
+version: 0.8.2
 author: Giinger, hammale
 commands:
   drugmeup:
     description:
-    usage: "Incorrect usage. '/drugmeup reload'"
+    usage: "Incorrect usage. '/drugmeup [cleardrugs/reload]'"
     
 permissions:
     drugs.*:
@@ -13,6 +13,7 @@ permissions:
         children:
             drugs.use: true
             drugs.reload: true
+            drugs.cleardrugs: true
             drugs.updates: true
     drugs.updates:
         description: Shows members who login when there's an update for DrugMeUp
@@ -23,3 +24,6 @@ permissions:
     drugs.reload:
         description: Reloads the config
         default: op    
+    drugs.cleardrugs:
+        description: Clears drugs from player
+        default: op
