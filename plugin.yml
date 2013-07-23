@@ -1,6 +1,6 @@
 name: DrugMeUp
 main: me.giinger.dmu.Drugs
-version: 0.8.2
+version: 0.8.3
 author: Giinger, hammale
 commands:
   drugmeup:

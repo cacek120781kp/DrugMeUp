@@ -135,14 +135,15 @@ public class PlayerListener implements Listener {
 				e.setCancelled(true);
 			}
 		}
-		if (plugin.config.getBoolean("DrugIds." + i.getTypeId() + ".MustSneak") == true) {
-			if (plugin.isDrug(i.getTypeId(), i.getDurability()))
+		if (plugin.isDrug(i.getTypeId(), i.getDurability()))
+			if (plugin.config.getBoolean("DrugIds." + i.getTypeId()
+					+ ".MustSneak") == true) {
 				if (p.isSneaking()) {
 					doDrug(e);
 				}
-		} else {
-			doDrug(e);
-		}
+			} else {
+				doDrug(e);
+			}
 	}
 
 	public void doDrug(PlayerItemConsumeEvent e) {
