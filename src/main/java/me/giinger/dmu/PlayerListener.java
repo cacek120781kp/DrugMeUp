@@ -110,10 +110,14 @@ public class PlayerListener implements Listener {
 		if (plugin.getIsUpdate()) {
 			if (e.getPlayer().hasPermission("drugs.updates")
 					|| e.getPlayer().isOp()) {
-				e.getPlayer()
-						.sendMessage(
-								ChatColor.RED
-										+ "*\n* [DrugMeUp] Update Available! \n* Download it at: dev.bukkit.org/server-mods/drugmeup\n*");
+				String[] updateNotif = new String[4];
+				updateNotif[0] = " *";
+				updateNotif[1] = " * [DrugMeUp] Update Available! ";
+				updateNotif[2] = " * Download it at: dev.bukkit.org/server-mods/drugmeup";
+				updateNotif[3] = " *";
+				for (String s : updateNotif) {
+					e.getPlayer().sendMessage(ChatColor.RED + s);
+				}
 			}
 		}
 	}
@@ -378,8 +382,7 @@ public class PlayerListener implements Listener {
 			// Saturation
 			saturation(p);
 		}
-		
-		
+
 	}
 
 	public void walkWeird(Player p) {
@@ -551,7 +554,7 @@ public class PlayerListener implements Listener {
 					}
 				}, ran);
 	}
-	
+
 	public void healing(final Player p) {
 		int maxpower = plugin.config.getInt("Effects.Healing.MaxPower");
 		int minpower = plugin.config.getInt("Effects.Healing.MinPower");
@@ -567,8 +570,7 @@ public class PlayerListener implements Listener {
 			ran = mintime;
 		}
 
-		p.addPotionEffect(new PotionEffect(PotionEffectType.HEAL, ran,
-				power));
+		p.addPotionEffect(new PotionEffect(PotionEffectType.HEAL, ran, power));
 		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
 				new BukkitRunnable() {
 					public void run() {
@@ -576,7 +578,7 @@ public class PlayerListener implements Listener {
 					}
 				}, ran);
 	}
-	
+
 	public void regeneration(final Player p) {
 		int maxpower = plugin.config.getInt("Effects.Regeneration.MaxPower");
 		int minpower = plugin.config.getInt("Effects.Regeneration.MinPower");
@@ -601,7 +603,7 @@ public class PlayerListener implements Listener {
 					}
 				}, ran);
 	}
-	
+
 	public void resistance(final Player p) {
 		int maxpower = plugin.config.getInt("Effects.Resistance.MaxPower");
 		int minpower = plugin.config.getInt("Effects.Resistance.MinPower");
@@ -617,8 +619,8 @@ public class PlayerListener implements Listener {
 			ran = mintime;
 		}
 
-		p.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, ran,
-				power));
+		p.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE,
+				ran, power));
 		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
 				new BukkitRunnable() {
 					public void run() {
@@ -626,7 +628,7 @@ public class PlayerListener implements Listener {
 					}
 				}, ran);
 	}
-	
+
 	public void fireResistance(final Player p) {
 		int maxpower = plugin.config.getInt("Effects.FireResistance.MaxPower");
 		int minpower = plugin.config.getInt("Effects.FireResistance.MinPower");
@@ -642,8 +644,8 @@ public class PlayerListener implements Listener {
 			ran = mintime;
 		}
 
-		p.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, ran,
-				power));
+		p.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE,
+				ran, power));
 		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
 				new BukkitRunnable() {
 					public void run() {
@@ -651,7 +653,7 @@ public class PlayerListener implements Listener {
 					}
 				}, ran);
 	}
-	
+
 	public void waterBreathe(final Player p) {
 		int maxpower = plugin.config.getInt("Effects.WaterBreathing.MaxPower");
 		int minpower = plugin.config.getInt("Effects.WaterBreathing.MinPower");
@@ -667,8 +669,8 @@ public class PlayerListener implements Listener {
 			ran = mintime;
 		}
 
-		p.addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, ran,
-				power));
+		p.addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING,
+				ran, power));
 		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
 				new BukkitRunnable() {
 					public void run() {
@@ -701,7 +703,7 @@ public class PlayerListener implements Listener {
 					}
 				}, ran);
 	}
-	
+
 	public void nightVision(final Player p) {
 		int maxpower = plugin.config.getInt("Effects.NightVision.MaxPower");
 		int minpower = plugin.config.getInt("Effects.NightVision.MinPower");
@@ -726,7 +728,7 @@ public class PlayerListener implements Listener {
 					}
 				}, ran);
 	}
-	
+
 	public void poison(final Player p) {
 		int maxpower = plugin.config.getInt("Effects.Poison.MaxPower");
 		int minpower = plugin.config.getInt("Effects.Poison.MinPower");
@@ -742,8 +744,7 @@ public class PlayerListener implements Listener {
 			ran = mintime;
 		}
 
-		p.addPotionEffect(new PotionEffect(PotionEffectType.POISON, ran,
-				power));
+		p.addPotionEffect(new PotionEffect(PotionEffectType.POISON, ran, power));
 		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
 				new BukkitRunnable() {
 					public void run() {
@@ -767,8 +768,7 @@ public class PlayerListener implements Listener {
 			ran = mintime;
 		}
 
-		p.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, ran,
-				power));
+		p.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, ran, power));
 		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
 				new BukkitRunnable() {
 					public void run() {
@@ -776,7 +776,7 @@ public class PlayerListener implements Listener {
 					}
 				}, ran);
 	}
-	
+
 	public void absorption(final Player p) {
 		int maxpower = plugin.config.getInt("Effects.Absorption.MaxPower");
 		int minpower = plugin.config.getInt("Effects.Absorption.MinPower");
@@ -801,7 +801,7 @@ public class PlayerListener implements Listener {
 					}
 				}, ran);
 	}
-	
+
 	public void saturation(final Player p) {
 		int maxpower = plugin.config.getInt("Effects.Saturation.MaxPower");
 		int minpower = plugin.config.getInt("Effects.Saturation.MinPower");

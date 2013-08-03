@@ -74,6 +74,7 @@ public class Drugs extends JavaPlugin {
 		}
 		initialConfigGen();
 
+		final String nL = System.lineSeparator();
 		config = getConfig();
 		if (config.getBoolean("Options.AutoUpdateChecker") == true) {
 			getServer().getScheduler().runTaskAsynchronously(this,
@@ -86,8 +87,12 @@ public class Drugs extends JavaPlugin {
 												ChatColor.RED
 														+ ""
 														+ ChatColor.BOLD
-														+ "\n\n[DrugMeUp] Update Available! \nDownload it at: dev.bukkit.org/server-mods/drugmeup\n"
-														+ ChatColor.RESET);
+														+ nL
+														+ nL
+														+ "[DrugMeUp] Update Available! "
+														+ nL
+														+ "Download it at: dev.bukkit.org/server-mods/drugmeup"
+														+ nL + ChatColor.RESET);
 								isUpdate = true;
 							}
 						}
@@ -108,9 +113,51 @@ public class Drugs extends JavaPlugin {
 
 	public void initialConfigGen() {
 		config = getConfig();
+		String nL = System.lineSeparator();
 		if (config.getInt("DO_NOT_TOUCH_2") == 0) {
 			config.options()
-					.header("######### Effects #########\n0 - Nausea (Screen Spin)\n1 - Zoom-In & Walk Slow\n2 - Zoom-Out & Walk Fast\n3 - Blindness\n4 - Hunger\n5 - High Jump\n6 - Sickness & Slower Hitting\n7 - Drunk (Word Scramble)\n8 - Instant Healing\n9 - Regeneration\n10 - Resistance\n11 - Fire Resistance\n12 - Water Breathing\n13 - Invisibility\n14 - Night Vision\n15 - Poison\n16 - Wither Poison\n17 - Absorption (NOTE: Do not use higher numbers on Absorption MaxPower, otherwise your screen is full of golden hearts! :) )\n18 - Saturation\n ######## Negatives ########\n0 - None\n1 - Puke\n2 - Catch on fire\n3 - Heart Attack\n4 - Overdose\n###########################");
+					.header("######### Effects #########"
+							+ nL
+							+ "0 - Nausea (Screen Spin)"
+							+ nL
+							+ "1 - Zoom-In & Walk Slow"
+							+ nL
+							+ "2 - Zoom-Out & Walk Fast"
+							+ nL
+							+ "3 - Blindness"
+							+ nL
+							+ "4 - Hunger"
+							+ nL
+							+ "5 - High Jump"
+							+ nL
+							+ "6 - Sickness & Slower Hitting"
+							+ nL
+							+ "7 - Drunk (Word Scramble)"
+							+ nL
+							+ "8 - Instant Healing"
+							+ nL
+							+ "9 - Regeneration"
+							+ nL
+							+ "10 - Resistance"
+							+ nL
+							+ "11 - Fire Resistance"
+							+ nL
+							+ "12 - Water Breathing"
+							+ nL
+							+ "13 - Invisibility"
+							+ nL
+							+ "14 - Night Vision"
+							+ nL
+							+ "15 - Poison"
+							+ nL
+							+ "16 - Wither Poison"
+							+ nL
+							+ "17 - Absorption (NOTE: If you use higher numbers on Absorption MaxPower, your screen will fill with golden hearts! :) )"
+							+ nL + "18 - Saturation" + nL
+							+ " ######## Negatives ########" + nL + "0 - None"
+							+ nL + "1 - Puke" + nL + "2 - Catch on fire" + nL
+							+ "3 - Heart Attack" + nL + "4 - Overdose" + nL
+							+ "###########################");
 			config.addDefault("Effects.Nausea.MaxPower", 100);
 			config.addDefault("Effects.Nausea.MinPower", 10);
 			config.addDefault("Effects.Nausea.MaxTime", 50);
@@ -233,7 +280,7 @@ public class Drugs extends JavaPlugin {
 			config.addDefault("Options.EnableNegativeEffects", true);
 			config.addDefault("Options.EnableEffectMessages", true);
 			config.addDefault("Options.EnableJumpProtection", true);
-			config.addDefault("DO_NOT_TOUCH", "0.8.2");
+			config.addDefault("DO_NOT_TOUCH", "0.9");
 			config.addDefault("DO_NOT_TOUCH_2", 1);
 			config.set("DO_NOT_TOUCH_2", 1);
 			config.options().copyDefaults(true);
@@ -331,7 +378,7 @@ public class Drugs extends JavaPlugin {
 		BufferedReader br = new BufferedReader(fileRead);
 		String line;
 		// Only change this if you need to regenerate the config.
-		String check = "DO_NOT_TOUCH: 0.8.1";
+		String check = "DO_NOT_TOUCH: 0.8.2";
 		boolean needUpdate = false;
 
 		while ((line = br.readLine()) != null) {
