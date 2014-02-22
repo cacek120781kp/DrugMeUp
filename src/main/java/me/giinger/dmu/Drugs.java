@@ -3,6 +3,7 @@ package me.giinger.dmu;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -12,6 +13,7 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -35,7 +37,9 @@ public class Drugs extends JavaPlugin {
 	private EntityListener entityListener;
 	private PlayerListener playerListener;
 	File configFile = new File("plugins/DrugMeUp/config.yml");
+	File matList = new File("plugins/DrugMeUp/materialList.txt");
 	FileConfiguration config;
+	final String nL = System.lineSeparator();
 
 	public Drugs() {
 		this.onDrugs = new ArrayList<String>();
@@ -67,6 +71,7 @@ public class Drugs extends JavaPlugin {
 				.registerEvents(this.entityListener, this);
 
 		saveDefaultConfig();
+		doMatList();
 		try {
 			configUpdate();
 		} catch (IOException e1) {
@@ -74,7 +79,6 @@ public class Drugs extends JavaPlugin {
 		}
 		initialConfigGen();
 
-		final String nL = System.lineSeparator();
 		config = getConfig();
 		if (config.getBoolean("Options.AutoUpdateChecker") == true) {
 			getServer().getScheduler().runTaskAsynchronously(this,
@@ -113,7 +117,6 @@ public class Drugs extends JavaPlugin {
 
 	public void initialConfigGen() {
 		config = getConfig();
-		String nL = System.lineSeparator();
 		if (config.getInt("DO_NOT_TOUCH_2") == 0) {
 			config.options()
 					.header("######### Effects #########"
@@ -232,39 +235,43 @@ public class Drugs extends JavaPlugin {
 			config.addDefault("Effects.Saturation.MinTime", 15);
 			config.addDefault("Effects.Drunk.MaxTime", 50);
 			config.addDefault("Effects.Drunk.MinTime", 15);
-			config.addDefault("DrugIds.353.Effect", "2,5");
-			config.addDefault("DrugIds.353.Negatives", "1,3");
-			config.addDefault("DrugIds.353.Type", "Random");
-			config.addDefault("DrugIds.353.Smoke", false);
-			config.addDefault("DrugIds.353.DrugName", "Cocaine");
-			config.addDefault("DrugIds.351:2.Effect", "0,4");
-			config.addDefault("DrugIds.351:2.Negatives", "0");
-			config.addDefault("DrugIds.351:2.Type", "All");
-			config.addDefault("DrugIds.351:2.Smoke", true);
-			config.addDefault("DrugIds.351:2.DrugName", "Marijuana");
-			config.addDefault("DrugIds.40.Effect", "0,1,3,6");
-			config.addDefault("DrugIds.40.Negatives", "1,2,3,4");
-			config.addDefault("DrugIds.40.Type", "Random");
-			config.addDefault("DrugIds.40.Smoke", false);
-			config.addDefault("DrugIds.40.DrugName", "Shrooms");
-			config.addDefault("DrugIds.40.Message",
+			config.addDefault("DrugIds.SUGAR.Effect", "2,5");
+			config.addDefault("DrugIds.SUGAR.Negatives", "1,3");
+			config.addDefault("DrugIds.SUGAR.NegChance", 30);
+			config.addDefault("DrugIds.SUGAR.Type", "Random");
+			config.addDefault("DrugIds.SUGAR.Smoke", false);
+			config.addDefault("DrugIds.SUGAR.DrugName", "Cocaine");
+			config.addDefault("DrugIds.INK_SACK:2.Effect", "0,4");
+			config.addDefault("DrugIds.INK_SACK:2.Negatives", "0");
+			config.addDefault("DrugIds.INK_SACK:2.Type", "All");
+			config.addDefault("DrugIds.INK_SACK:2.Smoke", true);
+			config.addDefault("DrugIds.INK_SACK:2.DrugName", "Marijuana");
+			config.addDefault("DrugIds.RED_MUSHROOM.Effect", "0,1,3,6");
+			config.addDefault("DrugIds.RED_MUSHROOM.Negatives", "1,2,3,4");
+			config.addDefault("DrugIds.RED_MUSHROOM.NegChance", 20);
+			config.addDefault("DrugIds.RED_MUSHROOM.Type", "Random");
+			config.addDefault("DrugIds.RED_MUSHROOM.Smoke", false);
+			config.addDefault("DrugIds.RED_MUSHROOM.DrugName", "Shrooms");
+			config.addDefault("DrugIds.RED_MUSHROOM.Message",
 					"You're about to get hella trippy man.");
-			config.addDefault("DrugIds.373.Effect", "2,5");
-			config.addDefault("DrugIds.373.Negatives", "1");
-			config.addDefault("DrugIds.373.Type", "Random");
-			config.addDefault("DrugIds.373.Smoke", true);
-			config.addDefault("DrugIds.373.DrugName", "Vodka");
-			config.addDefault("DrugIds.357.Effect", "0,2,4,5");
-			config.addDefault("DrugIds.357.Negatives", "0");
-			config.addDefault("DrugIds.357.Type", "All");
-			config.addDefault("DrugIds.357.Smoke", true);
-			config.addDefault("DrugIds.357.DrugName", "Hash Cookies");
-			config.addDefault("DrugIds.375.Effect", "0,1,3,6");
-			config.addDefault("DrugIds.375.Negatives", "1,2,3,4");
-			config.addDefault("DrugIds.375.Type", "All");
-			config.addDefault("DrugIds.375.Smoke", true);
-			config.addDefault("DrugIds.375.DrugName", "Wild Shrooms");
-			config.addDefault("DrugIds.375.MustSneak", false);
+			config.addDefault("DrugIds.POTION.Effect", "2,5");
+			config.addDefault("DrugIds.POTION.Negatives", "1");
+			config.addDefault("DrugIds.POTION.NegChance", 10);
+			config.addDefault("DrugIds.POTION.Type", "Random");
+			config.addDefault("DrugIds.POTION.Smoke", true);
+			config.addDefault("DrugIds.POTION.DrugName", "Vodka");
+			config.addDefault("DrugIds.COOKIE.Effect", "0,2,4,5");
+			config.addDefault("DrugIds.COOKIE.Negatives", "0");
+			config.addDefault("DrugIds.COOKIE.Type", "All");
+			config.addDefault("DrugIds.COOKIE.Smoke", true);
+			config.addDefault("DrugIds.COOKIE.DrugName", "Hash Cookies");
+			config.addDefault("DrugIds.SPIDER_EYE.Effect", "0,1,3,6");
+			config.addDefault("DrugIds.SPIDER_EYE.Negatives", "1,2,3,4");
+			config.addDefault("DrugIds.SPIDER_EYE.NegChance", 25);
+			config.addDefault("DrugIds.SPIDER_EYE.Type", "All");
+			config.addDefault("DrugIds.SPIDER_EYE.Smoke", true);
+			config.addDefault("DrugIds.SPIDER_EYE.DrugName", "Wild Shrooms");
+			config.addDefault("DrugIds.SPIDER_EYE.MustSneak", false);
 			config.addDefault("Chat.Broadcast.Burning",
 					"%c* %playername% bursts into flames");
 			config.addDefault("Chat.Broadcast.Death",
@@ -280,12 +287,38 @@ public class Drugs extends JavaPlugin {
 			config.addDefault("Options.EnableNegativeEffects", true);
 			config.addDefault("Options.EnableEffectMessages", true);
 			config.addDefault("Options.EnableJumpProtection", true);
-			config.addDefault("DO_NOT_TOUCH", "0.9");
+			config.addDefault("DO_NOT_TOUCH", "0.9.1");
 			config.addDefault("DO_NOT_TOUCH_2", 1);
 			config.set("DO_NOT_TOUCH_2", 1);
 			config.options().copyDefaults(true);
 			saveConfig();
 			reloadConfig();
+		}
+	}
+
+	private void doMatList() {
+		try {
+			if (!matList.exists()) {
+				matList.createNewFile();
+				List<String> list = new ArrayList<>();
+				for (Material m : Material.values()) {
+					list.add(m.name());
+				}
+				FileWriter fw = new FileWriter(matList);
+
+				fw.write("---- All Materials ----" + nL);
+				for (String s : list) {
+					fw.write(s + nL);
+				}
+				fw.close();
+
+				Bukkit.getConsoleSender().sendMessage(
+						ChatColor.RED + "" + ChatColor.BOLD + nL + nL
+								+ "[DrugMeUp] Material File Generated " + nL
+								+ ChatColor.RESET);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -352,16 +385,16 @@ public class Drugs extends JavaPlugin {
 		return ChatColor.translateAlternateColorCodes('%', s);
 	}
 
-	public void getEffects(int id, short damage) {
+	public void getEffects(Material material, short damage) {
 		config = getConfig();
 
 		String[] effects;
 		String effectslist;
 
 		if (damage == 0) {
-			effectslist = config.getString("DrugIds." + id + ".Effect");
+			effectslist = config.getString("DrugIds." + material + ".Effect");
 		} else {
-			effectslist = config.getString("DrugIds." + id + ":" + damage
+			effectslist = config.getString("DrugIds." + material + ":" + damage
 					+ ".Effect");
 		}
 
@@ -378,7 +411,7 @@ public class Drugs extends JavaPlugin {
 		BufferedReader br = new BufferedReader(fileRead);
 		String line;
 		// Only change this if you need to regenerate the config.
-		String check = "DO_NOT_TOUCH: 0.8.2";
+		String check = "DO_NOT_TOUCH: '0.9'";
 		boolean needUpdate = false;
 
 		while ((line = br.readLine()) != null) {
@@ -424,15 +457,15 @@ public class Drugs extends JavaPlugin {
 		return false;
 	}
 
-	public boolean isDrug(int id, short data) {
+	public boolean isDrug(Material material, short data) {
 		config = getConfig();
 
 		if (data <= 0) {
-			if (config.getString("DrugIds." + id) != null) {
+			if (config.getString("DrugIds." + material) != null) {
 				return true;
 			}
 		} else {
-			if (config.getString("DrugIds." + id + ":" + data) != null) {
+			if (config.getString("DrugIds." + material + ":" + data) != null) {
 				return true;
 			}
 		}

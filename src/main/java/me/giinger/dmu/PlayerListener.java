@@ -51,21 +51,21 @@ public class PlayerListener implements Listener {
 				short data = stack.getDurability();
 				if ((e.getAction().equals(Action.RIGHT_CLICK_AIR) || e
 						.getAction().equals(Action.RIGHT_CLICK_BLOCK))) {
-					if (plugin.isDrug(stack.getTypeId(), data)) {
-						if (Arrays.asList(edibles).contains(stack.getTypeId())) {
+					if (plugin.isDrug(stack.getType(), data)) {
+						if (Arrays.asList(edibles).contains(stack.getType())) {
 							return;
 						}
 						if (player.isSneaking()) {
 							ItemStack old = new ItemStack(e.getPlayer()
-									.getItemInHand().getTypeId(), e.getPlayer()
+									.getItemInHand().getType(), e.getPlayer()
 									.getItemInHand().getAmount() - 1, data);
 							e.getPlayer().setItemInHand(old);
-							gatherEffects(player, stack.getTypeId(), data);
+							gatherEffects(player, stack.getType(), data);
 							plugin.getNoPlace().add(player.getName());
-							doSmoke(player, stack.getTypeId(), data);
+							doSmoke(player, stack.getType(), data);
 							if (plugin.config
 									.getBoolean("Options.EnableNegativeEffects") == true) {
-								doNegatives(player, stack.getTypeId(), data);
+								doNegatives(player, stack.getType(), data);
 							}
 
 							Bukkit.getScheduler().scheduleSyncDelayedTask(
@@ -127,7 +127,7 @@ public class PlayerListener implements Listener {
 		Player p = e.getPlayer();
 		ItemStack i = e.getItem();
 		if (i.getType() == Material.MILK_BUCKET) {
-			if (plugin.isDrug(i.getTypeId(), i.getDurability())) {
+			if (plugin.isDrug(i.getType(), i.getDurability())) {
 				ItemStack milk = new ItemStack(Material.MILK_BUCKET, 1);
 				for (ItemStack i2 : p.getInventory().getContents()) {
 					if (i2 != null) {
@@ -139,8 +139,8 @@ public class PlayerListener implements Listener {
 				e.setCancelled(true);
 			}
 		}
-		if (plugin.isDrug(i.getTypeId(), i.getDurability()))
-			if (plugin.config.getBoolean("DrugIds." + i.getTypeId()
+		if (plugin.isDrug(i.getType(), i.getDurability()))
+			if (plugin.config.getBoolean("DrugIds." + i.getType()
 					+ ".MustSneak") == true) {
 				if (p.isSneaking()) {
 					doDrug(e);
@@ -153,74 +153,80 @@ public class PlayerListener implements Listener {
 	public void doDrug(PlayerItemConsumeEvent e) {
 		Player p = e.getPlayer();
 		ItemStack i = e.getItem();
-		ItemStack old = new ItemStack(
-				e.getPlayer().getItemInHand().getTypeId(), e.getPlayer()
-						.getItemInHand().getAmount() - 1, i.getDurability());
+		ItemStack old = new ItemStack(e.getPlayer().getItemInHand().getType(),
+				e.getPlayer().getItemInHand().getAmount() - 1,
+				i.getDurability());
 		e.getPlayer().setItemInHand(old);
-		gatherEffects(p, i.getTypeId(), i.getDurability());
-		doSmoke(p, i.getTypeId(), i.getDurability());
+		gatherEffects(p, i.getType(), i.getDurability());
+		doSmoke(p, i.getType(), i.getDurability());
 		if (plugin.config.getBoolean("Options.EnableNegativeEffects") == true)
-			doNegatives(p, i.getTypeId(), i.getDurability());
+			doNegatives(p, i.getType(), i.getDurability());
 	}
 
-	public void doSmoke(Player p, int id, short dmg) {
+	public void doSmoke(Player p, Material material, short dmg) {
 		boolean smoke;
 		if (dmg == 0) {
-			smoke = plugin.config.getBoolean("DrugIds." + id + ".Smoke");
+			smoke = plugin.config.getBoolean("DrugIds." + material + ".Smoke");
 		} else {
-			smoke = plugin.config.getBoolean("DrugIds." + id + ":" + dmg
+			smoke = plugin.config.getBoolean("DrugIds." + material + ":" + dmg
 					+ ".Smoke");
 		}
 		if (smoke) {
 			for (int iSmoke = 0; iSmoke <= 8; iSmoke++) {
-				p.getWorld().playEffect(p.getLocation(), Effect.SMOKE, iSmoke);
+				p.getWorld().playEffect(p.getLocation().add(0, 1, 0),
+						Effect.SMOKE, iSmoke);
 			}
 		}
 	}
 
-	public void doNegatives(Player p, int id, short dmg) {
+	public void doNegatives(Player p, Material material, short dmg) {
 		List<Integer> negatives = new ArrayList<Integer>();
 		try {
+			int negChance = 0;
 			if (dmg == 0) {
 				String[] negs = plugin.config
-						.getString("DrugIds." + id + ".Negatives")
+						.getString("DrugIds." + material + ".Negatives")
 						.replaceAll(" ", "").split(",");
 				for (String s : negs) {
 					negatives.add(Integer.parseInt(s));
 				}
+				if (!negatives.contains(0))
+					negChance = plugin.config.getInt("DrugIds." + material
+							+ ".NegChance");
 			} else {
 				String[] negs = plugin.config
-						.getString("DrugIds." + id + ":" + dmg + ".Negatives")
-						.replaceAll(" ", "").split(",");
+						.getString(
+								"DrugIds." + material + ":" + dmg
+										+ ".Negatives").replaceAll(" ", "")
+						.split(",");
 				for (String s : negs) {
 					negatives.add(Integer.parseInt(s));
 				}
+				if (!negatives.contains(0))
+					negChance = plugin.config.getInt("DrugIds." + material
+							+ ":" + dmg + ".NegChance");
 			}
 			if (negatives.contains(0)) {
 				return;
 			} else {
-				int iNegative = gen.nextInt(32);
-				if (iNegative < 1) {
-					iNegative = 5;
-				}
-				if (iNegative > 32) {
-					iNegative = 32;
-				}
+				int iNegative = gen.nextInt(100);
+				if (iNegative < 1)
+					iNegative = 1;
+				int currentNeg = gen.nextInt(4);
+				if (currentNeg < 1)
+					currentNeg = 1;
 
-				if (iNegative == 1) {
-					if (negatives.contains(1)) {
+				if (iNegative <= negChance) {
+					if (currentNeg == 1) {
 						pukeInv(p);
 					}
-				} else if (iNegative == 2) {
-					if (negatives.contains(2)) {
+					if (currentNeg == 2) {
 						torchYa(p);
 					}
-				} else if (iNegative == 3) {
-					if (negatives.contains(3)) {
+					if (currentNeg == 3) {
 						heartAttack(p);
 					}
-				} else if (iNegative == 4) {
-					if (negatives.contains(4)) {
+					if (currentNeg == 4) {
 						youOd(p);
 					}
 				}
@@ -231,35 +237,36 @@ public class PlayerListener implements Listener {
 		}
 	}
 
-	public void gatherEffects(Player p, int i, short dmg) {
-		plugin.getEffects(i, dmg);
+	public void gatherEffects(Player p, Material material, short dmg) {
+		plugin.getEffects(material, dmg);
 
 		if (dmg == 0) {
-			if (plugin.config.getString("DrugIds." + i + ".Type")
+			if (plugin.config.getString("DrugIds." + material + ".Type")
 					.equalsIgnoreCase("All")) {
 				for (int ii : plugin.getEffectList()) {
 					applyEffect(p, ii);
 				}
 				plugin.getEffectList().clear();
-			} else if (plugin.config.getString("DrugIds." + i + ".Type")
+			} else if (plugin.config.getString("DrugIds." + material + ".Type")
 					.equalsIgnoreCase("Random")) {
 				doRandomEffects(p);
 			}
 		} else {
-			if (plugin.config.getString("DrugIds." + i + ":" + dmg + ".Type")
+			if (plugin.config.getString(
+					"DrugIds." + material + ":" + dmg + ".Type")
 					.equalsIgnoreCase("All")) {
 				for (int ii : plugin.getEffectList()) {
 					applyEffect(p, ii);
 				}
 				plugin.getEffectList().clear();
 			} else if (plugin.config.getString(
-					"DrugIds." + i + ":" + dmg + ".Type").equalsIgnoreCase(
-					"Random")) {
+					"DrugIds." + material + ":" + dmg + ".Type")
+					.equalsIgnoreCase("Random")) {
 				doRandomEffects(p);
 			}
 		}
 
-		int itemi = p.getItemInHand().getTypeId();
+		Material itemi = p.getItemInHand().getType();
 		short dura = p.getItemInHand().getDurability();
 		String ond = "";
 
@@ -901,7 +908,7 @@ public class PlayerListener implements Listener {
 	}
 
 	public void torchYa(Player p) {
-		int itemi = p.getItemInHand().getTypeId();
+		Material itemi = p.getItemInHand().getType();
 		short dura = p.getItemInHand().getDurability();
 		String hot = "";
 
@@ -926,7 +933,7 @@ public class PlayerListener implements Listener {
 	}
 
 	public void youOd(Player p) {
-		int itemi = p.getItemInHand().getTypeId();
+		Material itemi = p.getItemInHand().getType();
 		short dura = p.getItemInHand().getDurability();
 		String death = "";
 
@@ -951,7 +958,7 @@ public class PlayerListener implements Listener {
 	}
 
 	public void heartAttack(final Player p) {
-		int itemi = p.getItemInHand().getTypeId();
+		Material itemi = p.getItemInHand().getType();
 		short dura = p.getItemInHand().getDurability();
 		String heartAttack;
 
