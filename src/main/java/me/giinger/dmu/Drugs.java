@@ -5,7 +5,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import me.giinger.dmu.Updater.UpdateType;
@@ -40,6 +43,7 @@ public class Drugs extends JavaPlugin {
 	ArrayList<World> worlds = new ArrayList<World>();
 	File configFile = new File("plugins/DrugMeUp/config.yml");
 	File matList = new File("plugins/DrugMeUp/materialList.txt");
+	File oldDir = new File("plugins/DrugMeUp/Old_Configs/");
 	FileConfiguration config;
 	final String nL = System.lineSeparator();
 
@@ -276,6 +280,7 @@ public class Drugs extends JavaPlugin {
 			config.addDefault("Options.Worlds", "*");
 			config.addDefault("Options.AutoUpdateChecker", true);
 			config.addDefault("Options.AutoUpdateDownload", true);
+			config.addDefault("Options.SaveOldConfigs", true);
 			config.addDefault("Options.EnableNegativeEffects", true);
 			config.addDefault("Options.EnableEffectMessages", true);
 			config.addDefault("Options.EnableJumpProtection", true);
@@ -399,30 +404,55 @@ public class Drugs extends JavaPlugin {
 
 	private void configUpdate() throws IOException {
 		File file = new File(getDataFolder(), "config.yml");
-		FileReader fileRead = new FileReader(file);
-		BufferedReader br = new BufferedReader(fileRead);
+		BufferedReader br = new BufferedReader(new FileReader(file));
 		String line;
 		// Only change this if you need to regenerate the config.
 		String check = "DO_NOT_TOUCH: '0.9'";
 		boolean needUpdate = false;
+		boolean saveOld = true;
 
 		while ((line = br.readLine()) != null) {
 			if (line.equalsIgnoreCase(check)) {
 				needUpdate = true;
 			}
-		}
-
-		if (needUpdate) {
-			saveDefaultConfig2();
-			Bukkit.getConsoleSender()
-					.sendMessage(
-							ChatColor.RED
-									+ ""
-									+ ChatColor.BOLD
-									+ "[DrugMeUp] Config Regenerated! Update to your liking again."
-									+ ChatColor.RESET);
+			if (line.replaceAll(" ", "").equalsIgnoreCase(
+					"SaveOldConfigs:false")) {
+				saveOld = false;
+			}
 		}
 		br.close();
+
+		if (needUpdate) {
+			String string;
+			if (saveOld) {
+				string = ChatColor.RED
+						+ ""
+						+ ChatColor.BOLD
+						+ "[DrugMeUp] Config Saved & Regenerated! Update new one to your liking."
+						+ ChatColor.RESET;
+				oldDir.mkdir();
+				DateFormat dateFormat = new SimpleDateFormat(
+						"MM-dd-yyyy_HH-mm-ss");
+				Date date = new Date();
+				file.renameTo(new File(oldDir + "\\" + dateFormat.format(date)
+						+ ".yml"));
+			} else {
+				string = ChatColor.RED
+						+ ""
+						+ ChatColor.BOLD
+						+ "[DrugMeUp] Config Regenerated! Update new one to your liking."
+						+ ChatColor.RESET;
+				saveDefaultConfig2();
+				config = getConfig();
+				config.set("Options.SaveOldConfigs", false);
+				saveConfig();
+				reloadConfig();
+				Bukkit.getConsoleSender().sendMessage(string);
+				return;
+			}
+			saveDefaultConfig2();
+			Bukkit.getConsoleSender().sendMessage(string);
+		}
 	}
 
 	public boolean isUpdate(UpdateType type) {
