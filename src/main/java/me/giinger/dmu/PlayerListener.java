@@ -46,35 +46,40 @@ public class PlayerListener implements Listener {
 	public void onPlayerInteract(PlayerInteractEvent e) {
 		final Player player = e.getPlayer();
 		if (player.hasPermission("drugs.use") || player.isOp()) {
-			ItemStack stack = player.getItemInHand();
-			if (stack != null) {
-				short data = stack.getDurability();
-				if ((e.getAction().equals(Action.RIGHT_CLICK_AIR) || e
-						.getAction().equals(Action.RIGHT_CLICK_BLOCK))) {
-					if (plugin.isDrug(stack.getType(), data)) {
-						if (Arrays.asList(edibles).contains(stack.getType())) {
-							return;
-						}
-						if (player.isSneaking()) {
-							ItemStack old = new ItemStack(e.getPlayer()
-									.getItemInHand().getType(), e.getPlayer()
-									.getItemInHand().getAmount() - 1, data);
-							e.getPlayer().setItemInHand(old);
-							gatherEffects(player, stack.getType(), data);
-							plugin.getNoPlace().add(player.getName());
-							doSmoke(player, stack.getType(), data);
-							if (plugin.config
-									.getBoolean("Options.EnableNegativeEffects") == true) {
-								doNegatives(player, stack.getType(), data);
+			if (plugin.worlds.isEmpty()
+					|| plugin.worlds.contains(player.getWorld())) {
+				ItemStack stack = player.getItemInHand();
+				if (stack != null) {
+					short data = stack.getDurability();
+					if ((e.getAction().equals(Action.RIGHT_CLICK_AIR) || e
+							.getAction().equals(Action.RIGHT_CLICK_BLOCK))) {
+						if (plugin.isDrug(stack.getType(), data)) {
+							if (Arrays.asList(edibles)
+									.contains(stack.getType())) {
+								return;
 							}
+							if (player.isSneaking()) {
+								ItemStack old = new ItemStack(e.getPlayer()
+										.getItemInHand().getType(), e
+										.getPlayer().getItemInHand()
+										.getAmount() - 1, data);
+								e.getPlayer().setItemInHand(old);
+								gatherEffects(player, stack.getType(), data);
+								plugin.getNoPlace().add(player.getName());
+								doSmoke(player, stack.getType(), data);
+								if (plugin.config
+										.getBoolean("Options.EnableNegativeEffects") == true) {
+									doNegatives(player, stack.getType(), data);
+								}
 
-							Bukkit.getScheduler().scheduleSyncDelayedTask(
-									plugin, new BukkitRunnable() {
-										public void run() {
-											plugin.getNoPlace().remove(
-													player.getName());
-										}
-									}, 20);
+								Bukkit.getScheduler().scheduleSyncDelayedTask(
+										plugin, new BukkitRunnable() {
+											public void run() {
+												plugin.getNoPlace().remove(
+														player.getName());
+											}
+										}, 20);
+							}
 						}
 					}
 				}
@@ -115,6 +120,19 @@ public class PlayerListener implements Listener {
 				updateNotif[1] = " * [DrugMeUp] Update Available! ";
 				updateNotif[2] = " * Download it at: dev.bukkit.org/server-mods/drugmeup";
 				updateNotif[3] = " *";
+				for (String s : updateNotif) {
+					e.getPlayer().sendMessage(ChatColor.RED + s);
+				}
+			}
+		} else if (plugin.getIsDownloaded()) {
+			if (e.getPlayer().hasPermission("drugs.updates")
+					|| e.getPlayer().isOp()) {
+				String[] updateNotif = new String[4];
+				updateNotif[0] = " *";
+				updateNotif[1] = " * [DrugMeUp] Update Downloaded! ";
+				updateNotif[2] = " * Restart for changes to take effect!";
+				updateNotif[3] = " * Check it at: dev.bukkit.org/server-mods/drugmeup";
+				updateNotif[4] = " *";
 				for (String s : updateNotif) {
 					e.getPlayer().sendMessage(ChatColor.RED + s);
 				}

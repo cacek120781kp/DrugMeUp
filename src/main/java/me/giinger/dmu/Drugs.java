@@ -5,15 +5,15 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
+
+import me.giinger.dmu.Updater.UpdateType;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -21,7 +21,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.scheduler.BukkitRunnable;
 
 public class Drugs extends JavaPlugin {
 
@@ -33,9 +32,12 @@ public class Drugs extends JavaPlugin {
 	private List<Integer> effectlist;
 	private List<String> heartattack;
 	private boolean isUpdate;
+	private boolean isDownloaded;
+	private boolean mWorld;
 	private BlockListener blockListener;
 	private EntityListener entityListener;
 	private PlayerListener playerListener;
+	ArrayList<World> worlds = new ArrayList<World>();
 	File configFile = new File("plugins/DrugMeUp/config.yml");
 	File matList = new File("plugins/DrugMeUp/materialList.txt");
 	FileConfiguration config;
@@ -80,27 +82,15 @@ public class Drugs extends JavaPlugin {
 		initialConfigGen();
 
 		config = getConfig();
-		if (config.getBoolean("Options.AutoUpdateChecker") == true) {
-			getServer().getScheduler().runTaskAsynchronously(this,
-					new BukkitRunnable() {
-						@Override
-						public void run() {
-							if (isUpdate()) {
-								Bukkit.getConsoleSender()
-										.sendMessage(
-												ChatColor.RED
-														+ ""
-														+ ChatColor.BOLD
-														+ nL
-														+ nL
-														+ "[DrugMeUp] Update Available! "
-														+ nL
-														+ "Download it at: dev.bukkit.org/server-mods/drugmeup"
-														+ nL + ChatColor.RESET);
-								isUpdate = true;
-							}
-						}
-					});
+		if (config.getBoolean("Options.AutoUpdateChecker") == true
+				&& config.getBoolean("Options.AutoUpdateDownload") == false) {
+			isUpdate(UpdateType.NO_DOWNLOAD);
+		} else if (config.getBoolean("Options.AutoUpdateDownload") == true) {
+			isUpdate(UpdateType.DEFAULT);
+		}
+
+		if (isMultiworld()) {
+			getWorlds();
 		}
 	}
 
@@ -283,7 +273,9 @@ public class Drugs extends JavaPlugin {
 			config.addDefault("Chat.Self.TakeDrugs",
 					"You have taken %drugname%!");
 			config.addDefault("Chat.Self.Sober", "%aYou begin to feel sober!");
+			config.addDefault("Options.Worlds", "*");
 			config.addDefault("Options.AutoUpdateChecker", true);
+			config.addDefault("Options.AutoUpdateDownload", true);
 			config.addDefault("Options.EnableNegativeEffects", true);
 			config.addDefault("Options.EnableEffectMessages", true);
 			config.addDefault("Options.EnableJumpProtection", true);
@@ -433,28 +425,39 @@ public class Drugs extends JavaPlugin {
 		br.close();
 	}
 
-	public boolean isUpdate() {
-		try {
-			pdfFile = getDescription();
-			URL url = new URL(
-					"https://dl.dropbox.com/u/46370614/DMU_Update.txt");
-			URLConnection urlconnection = url.openConnection();
-			BufferedReader br = new BufferedReader(new InputStreamReader(
-					urlconnection.getInputStream()));
-
-			String u = br.readLine();
-			String current = pdfFile.getVersion();
-
-			if (u == null ? current == null : u.equals(current)) {
-				return false;
-			} else {
-				return true;
+	public boolean isUpdate(UpdateType type) {
+		Updater updater;
+		updater = new Updater(this, 35506, this.getFile(),
+				Updater.UpdateType.NO_DOWNLOAD, true);
+		pdfFile = getDescription();
+		if (type == UpdateType.DEFAULT) {
+			if (!updater.getLatestName().equalsIgnoreCase(
+					"drugmeup v" + pdfFile.getVersion())) {
+				updater = new Updater(this, 35506, this.getFile(), type, true);
+				isDownloaded = true;
 			}
-		} catch (IOException e) {
-			Bukkit.getConsoleSender().sendMessage(
-					"There was a problem checking for an update for DrugMeUp!");
+		} else if (type == UpdateType.NO_DOWNLOAD) {
+			updater = new Updater(this, 35506, this.getFile(), type, false);
+			Bukkit.getConsoleSender()
+					.sendMessage(
+							ChatColor.RED
+									+ ""
+									+ ChatColor.BOLD
+									+ nL
+									+ nL
+									+ "[DrugMeUp] Update Available! "
+									+ nL
+									+ "Download it at: dev.bukkit.org/server-mods/drugmeup"
+									+ nL + ChatColor.RESET);
+			isUpdate = true;
 		}
+
 		return false;
+	}
+
+	public boolean isMultiworld() {
+		mWorld = getConfig().getString("Options.Worlds").equalsIgnoreCase("*");
+		return !mWorld;
 	}
 
 	public boolean isDrug(Material material, short data) {
@@ -471,6 +474,16 @@ public class Drugs extends JavaPlugin {
 		}
 
 		return false;
+	}
+
+	public void getWorlds() {
+		String[] inConfig = config.getString("Options.Worlds")
+				.replaceAll(" ", "").split(",");
+		ArrayList<World> worlds = new ArrayList<World>();
+		for (String s : inConfig) {
+			worlds.add(Bukkit.getWorld(s));
+		}
+		this.worlds = worlds;
 	}
 
 	public List<String> getNoPlace() {
@@ -495,6 +508,10 @@ public class Drugs extends JavaPlugin {
 
 	public boolean getIsUpdate() {
 		return this.isUpdate;
+	}
+
+	public boolean getIsDownloaded() {
+		return this.isDownloaded;
 	}
 
 	public List<Integer> getEffectList() {
