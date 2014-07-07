@@ -4,7 +4,7 @@
 
     <groupId>com.projectbarks</groupId>
     <artifactId>DrugMeUp</artifactId>
-    <version>0.8</version>
+    <version>0.9.2</version>
     <packaging>jar</packaging>
 
     <name>DrugMeUp</name>
@@ -20,7 +20,7 @@
             <url>http://repo.bukkit.org/content/repositories/snapshots/</url>
         </repository>
     </repositories>
-    
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>

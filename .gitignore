@@ -162,3 +162,17 @@ pip-log.txt
 # Mac crap
 .DS_Store
 /target/
+.idea/artifacts/DrugMeUp.xml
+.idea/.name
+.idea/compiler.xml
+.idea/copyright/profiles_settings.xml
+.idea/encodings.xml
+.idea/libraries/DrugMeUp.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/scopes/scope_settings.xml
+.idea/uiDesigner.xml
+.idea/vcs.xml
+.idea/workspace.xml
+DrugMeUp.iml
+META-INF/MANIFEST.MF
