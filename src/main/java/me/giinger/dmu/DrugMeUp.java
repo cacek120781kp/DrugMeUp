@@ -135,6 +135,13 @@ public class DrugMeUp extends JavaPlugin {
                 if (args[0].equalsIgnoreCase("reload")) {
                     if (sender.hasPermission("drugs.reload")) {
                         reloadConfig();
+                        config = getConfig();
+                        drugs.clear();
+                        worlds.clear();
+                        gatherDrugs();
+                        if (isMultiworld()) {
+                            gatherWorlds();
+                        }
                         if (sender instanceof Player) {
                             sender.sendMessage(ChatColor.GREEN
                                     + "DrugMeUp Reloaded!");
