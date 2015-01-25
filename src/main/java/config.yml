@@ -1,0 +1,184 @@
+# ######### Effects #########
+# 0 - Nausea (Screen Spin)
+# 1 - Zoom-In & Walk Slow
+# 2 - Zoom-Out & Walk Fast
+# 3 - Blindness
+# 4 - Hunger
+# 5 - High Jump
+# 6 - Sickness & Slower Hitting
+# 7 - Drunk (Word Scramble)
+# 8 - Instant Healing
+# 9 - Regeneration
+# 10 - Resistance
+# 11 - Fire Resistance
+# 12 - Water Breathing
+# 13 - Invisibility
+# 14 - Night Vision
+# 15 - Poison
+# 16 - Wither Poison
+# 17 - Absorption (NOTE: If you use higher numbers on Absorption MaxPower, your screen will fill with golden hearts! :) )
+# 18 - Saturation
+#  ######## Negatives ########
+# 0 - None
+# 1 - Puke
+# 2 - Catch on fire
+# 3 - Heart Attack
+# 4 - Overdose
+# ###########################
+Effects:
+  Nausea:
+    MaxPower: 100
+    MinPower: 10
+    MaxTime: 50
+    MinTime: 15
+  SlowWalk:
+    MaxPower: 100
+    MinPower: 10
+    MaxTime: 50
+    MinTime: 15
+  FastWalk:
+    MaxPower: 100
+    MinPower: 10
+    MaxTime: 50
+    MinTime: 15
+  Blindness:
+    MaxPower: 1000
+    MinPower: 100
+    MaxTime: 50
+    MinTime: 15
+  Hunger:
+    MaxPower: 1000
+    MinPower: 100
+    MaxTime: 50
+    MinTime: 15
+  HighJump:
+    MaxPower: 15
+    MinPower: 1
+    MaxTime: 50
+    MinTime: 15
+  SlowHit:
+    MaxPower: 1000
+    MinPower: 100
+    MaxTime: 50
+    MinTime: 15
+  Healing:
+    MaxPower: 1000
+    MinPower: 100
+    MaxTime: 50
+    MinTime: 15
+  Regeneration:
+    MaxPower: 1000
+    MinPower: 100
+    MaxTime: 50
+    MinTime: 15
+  Resistance:
+    MaxPower: 1000
+    MinPower: 100
+    MaxTime: 50
+    MinTime: 15
+  FireResistance:
+    MaxPower: 1000
+    MinPower: 100
+    MaxTime: 50
+    MinTime: 15
+  WaterBreathing:
+    MaxPower: 1000
+    MinPower: 100
+    MaxTime: 50
+    MinTime: 15
+  Invisibility:
+    MaxPower: 1000
+    MinPower: 100
+    MaxTime: 50
+    MinTime: 15
+  NightVision:
+    MaxPower: 1000
+    MinPower: 100
+    MaxTime: 50
+    MinTime: 15
+  Poison:
+    MaxPower: 1000
+    MinPower: 100
+    MaxTime: 50
+    MinTime: 15
+  WitherPoison:
+    MaxPower: 1000
+    MinPower: 100
+    MaxTime: 50
+    MinTime: 15
+  Absorption:
+    MaxPower: 4
+    MinPower: 1
+    MaxTime: 50
+    MinTime: 15
+  Saturation:
+    MaxPower: 1000
+    MinPower: 100
+    MaxTime: 50
+    MinTime: 15
+  Drunk:
+    MaxTime: 50
+    MinTime: 15
+DrugIds:
+  SUGAR:
+    Effect: 2,5
+    Negatives: 1,3
+    NegChance: 30
+    Type: Random
+    Smoke: false
+    DrugName: "Cocaine"
+  INK_SACK:2:
+    Effect: 0,4
+    Negatives: '0'
+    Type: All
+    Smoke: true
+    DrugName: "Marijuana"
+  RED_MUSHROOM:
+    Effect: 0,1,3,6
+    Negatives: 1,2,3,4
+    NegChance: 20
+    Type: Random
+    Smoke: false
+    DrugName: "Shrooms"
+    Message: "You're about to get hella trippy man."
+  POTION:
+    Effect: 2,5
+    Negatives: '1'
+    NegChance: 10
+    Type: Random
+    Smoke: true
+    DrugName: "Vodka"
+  COOKIE:
+    Effect: 0,2,4,5
+    Negatives: '0'
+    Type: All
+    Smoke: true
+    DrugName: "Hash Cookies"
+  SPIDER_EYE:
+    Effect: 0,1,3,6
+    Negatives: 1,2,3,4
+    NegChance: 25
+    Type: All
+    Smoke: true
+    DrugName: "Wild Shrooms"
+    MustSneak: false
+Chat:
+  Broadcast:
+    Burning: "&c* %playername% bursts into flames"
+    Death: "&c* %playername% OD'd - Don't do drugs kids!"
+    Puke: "&2* %playername% violently pukes his guts out"
+    HeartAttack: "&c* %playername% had a heart attack!"
+  Self:
+    TakeDrugs: "You have taken %drugname%!"
+    Sober: "&aYou begin to feel sober!"
+  Errors:
+    NoPerms: "&cYou don't have permission for that!"
+Options:
+  Worlds: '*'
+  AutoUpdateChecker: true
+  AutoUpdateDownload: true
+  SaveOldConfigs: true
+  EnableNegativeEffects: true
+  EnableEffectMessages: true
+  EnableJumpProtection: true
+DO_NOT_TOUCH: 0.9.3

@@ -4,6 +4,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 
+@SuppressWarnings("UnusedDeclaration")
 public class Drug {
 
     private ItemStack itemStack;

@@ -18,6 +18,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.io.IOException;
 
+@SuppressWarnings("UnusedDeclaration")
 public class EventsHandler implements Listener {
 
     final DrugMeUp plugin;
@@ -55,7 +56,6 @@ public class EventsHandler implements Listener {
         if (plugin.getNoPlace().contains(p.getName())) {
             plugin.getNoPlace().remove(p.getName());
         }
-
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -64,7 +64,7 @@ public class EventsHandler implements Listener {
         ItemStack item = player.getItemInHand();
         if (item != null) {
             if (plugin.isDrug(player.getItemInHand())) {
-                if (player.hasPermission("drugs.use") || player.isOp()) {
+                if (player.hasPermission("drugs.use")) {
                     if (!plugin.isMultiworld() || plugin.getWorlds().contains(player.getWorld())) {
                         if (e.getAction().equals(Action.RIGHT_CLICK_AIR) || e.getAction().equals(Action
                                 .RIGHT_CLICK_BLOCK)) {
@@ -78,7 +78,7 @@ public class EventsHandler implements Listener {
                                 // Return because edibles are handled by PlayerItemConsumeEvent
                                 return;
                             }
-                            pHandler.doDrug(player, drug);
+                            pHandler.doDrug(player, item);
                         }
                     }
                 }
@@ -89,10 +89,9 @@ public class EventsHandler implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityDamage(EntityDamageEvent e) {
         if (e.getEntity() instanceof Player) {
-            if (plugin.getIsJump().contains(((Player) e.getEntity()).getName())) {
+            if (plugin.getIsJump().contains((e.getEntity()).getName())) {
                 if (e.getCause().equals(EntityDamageEvent.DamageCause.FALL)) {
-                    if (plugin.config
-                            .getBoolean("Options.EnableJumpProtection")) {
+                    if (plugin.config.getBoolean("Options.EnableJumpProtection")) {
                         e.setCancelled(true);
                     }
                 }
@@ -111,8 +110,7 @@ public class EventsHandler implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent e) throws IOException {
-        plugin.players.put(e.getPlayer().getName(), e.getPlayer().getUniqueId());
-        if (plugin.getIsUpdate()) {
+        if (plugin.isUpdate()) {
             if (e.getPlayer().hasPermission("drugs.updates")
                     || e.getPlayer().isOp()) {
                 String[] updateNotif = new String[4];
@@ -125,8 +123,7 @@ public class EventsHandler implements Listener {
                 }
             }
         } else if (plugin.getIsDownloaded()) {
-            if (e.getPlayer().hasPermission("drugs.updates")
-                    || e.getPlayer().isOp()) {
+            if (e.getPlayer().hasPermission("drugs.updates") || e.getPlayer().isOp()) {
                 String[] updateNotif = new String[4];
                 updateNotif[0] = " *";
                 updateNotif[1] = " * [DrugMeUp] Update Downloaded! ";
@@ -158,13 +155,13 @@ public class EventsHandler implements Listener {
             }
         }
         if (plugin.isDrug(i)) {
-            if (plugin.config.getBoolean("DrugIds." + i.getType()
-                    + ".MustSneak")) {
+            if (plugin.config.getBoolean((i.getDurability() == 0) ? "DrugIds." + i.getType().name() + ".MustSneak" :
+                    "DrugIds." + i.getType().name() + ":" + i.getDurability() + ".MustSneak")) {
                 if (p.isSneaking()) {
-                    pHandler.doDrug(p, plugin.getDrug(i));
+                    pHandler.doDrug(p, i);
                 }
             } else {
-                pHandler.doDrug(p, plugin.getDrug(i));
+                pHandler.doDrug(p, i);
             }
         }
     }

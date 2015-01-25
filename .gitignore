@@ -176,3 +176,8 @@ pip-log.txt
 .idea/workspace.xml
 DrugMeUp.iml
 META-INF/MANIFEST.MF
+.idea/dictionaries/Dan.xml
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/inspectionProfiles/Project_Default.xml
+.idea/libraries/bukkit.xml
+.idea/libraries/craftbukkit_1_8.xml

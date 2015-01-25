@@ -10,7 +10,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Random;
 
@@ -23,12 +22,38 @@ public class PlayerHandler implements Listener {
         this.plugin = plugin;
     }
 
-    public void doDrug(Player p, Drug drug) {
-        p.getInventory().remove(drug.getItemStack());
-        doEffects(p, drug);
-        doSmoke(p, drug);
-        if (plugin.config.getBoolean("Options.EnableNegativeEffects"))
-            doNegatives(p, drug);
+    public void doDrug(Player p, ItemStack drug) {
+        if (drug.getAmount() > 1) {
+            drug.setAmount(drug.getAmount() - 1);
+        } else {
+            p.getInventory().removeItem(drug);
+        }
+        doMessage(p, plugin.getDrug(drug));
+        doEffects(p, plugin.getDrug(drug));
+        doSmoke(p, plugin.getDrug(drug));
+        if (plugin.config.getBoolean("Options.EnableNegativeEffects")) {
+            doNegatives(p, plugin.getDrug(drug));
+        }
+    }
+
+    private void doMessage(Player p, Drug drug) {
+        String mat = drug.getItemStack().getType().name();
+        short dmg = drug.getItemStack().getDurability();
+        boolean hasMessage = false;
+        String message = "";
+        if (dmg == 0) {
+            if (plugin.config.getString("DrugIds." + mat + ".Message") != null) {
+                hasMessage = true;
+                message = plugin.config.getString("DrugIds." + mat + ".Message");
+            }
+        } else {
+            if (plugin.config.getString("DrugIds." + mat + ":" + dmg + ".Message") != null) {
+                hasMessage = true;
+                message = plugin.config.getString("DrugIds." + mat + ":" + dmg + ".Message");
+            }
+        }
+        p.sendMessage(plugin.colorize(hasMessage ? message : plugin.config.getString("Chat.Self.TakeDrugs")
+                .replaceAll("%drugname%", drug.getName())));
     }
 
     private void doEffects(Player p, Drug drug) {
@@ -67,582 +92,397 @@ public class PlayerHandler implements Listener {
         int negChance = drug.getNegativeChance();
         int random = ran.nextInt(100);
         int currentNeg = ran.nextInt(4);
-        if (random < 100) {
+        if (random > 100) {
             random = 100;
         } else if (random < 1) {
             random = 1;
         }
-        if (currentNeg < 1) {
-            currentNeg = 1;
-        }
+        filterInt(currentNeg, 1);
 
         if (random <= negChance) {
             switch (currentNeg) {
                 case 1:
-                    pukeInv(p);
+                    doPuke(p);
                     break;
                 case 2:
-                    torchYa(p);
+                    doBurning(p);
                     break;
                 case 3:
-                    heartAttack(p);
+                    doHeartAttack(p);
                     break;
                 case 4:
-                    youOd(p);
+                    doOverdose(p);
                     break;
             }
         }
     }
 
     public void applyEffect(Player p, int i) {
-
         plugin.getOnDrugs().add(p.getName());
 
-        // All potion effects here:
-        // http://www.minecraftwiki.net/wiki/Status_effect
+        /* All potion effects here:
+         http://www.minecraftwiki.net/wiki/Status_effect */
 
-        if (i == 0) {
-            // Portal Effect
-            walkWeird(p);
-        } else if (i == 1) {
-            // Zoom-In & Walk Slow
-            walkSlow(p);
-        } else if (i == 2) {
-            // Zoom-Out & Walk Fast
-            walkFast(p);
-        } else if (i == 3) {
-            // Blind
-            blindMe(p);
-        } else if (i == 4) {
-            // Hunger
-            soHungry(p);
-        } else if (i == 5) {
-            // High Jump
-            feelingJumpy(p);
-        } else if (i == 6) {
-            // Sickness & Slower Hitting
-            soSick(p);
-        } else if (i == 7) {
-            // Drunk
-            drunk(p);
-        } else if (i == 8) {
-            // Healing
-            healing(p);
-        } else if (i == 9) {
-            // Regeneration
-            regeneration(p);
-        } else if (i == 10) {
-            // Resistance
-            resistance(p);
-        } else if (i == 11) {
-            // fire resistance
-            fireResistance(p);
-        } else if (i == 12) {
-            // Water breathing
-            waterBreathe(p);
-        } else if (i == 13) {
-            // Invisibility
-            invisibility(p);
-        } else if (i == 14) {
-            // Night vision
-            nightVision(p);
-        } else if (i == 15) {
-            // Poison
-            poison(p);
-        } else if (i == 16) {
-            // Wither poison
-            witherPoison(p);
-        } else if (i == 17) {
-            // Absorption
-            absorption(p);
-        } else if (i == 18) {
-            // Saturation
-            saturation(p);
+        switch (i) {
+            case 0:
+                // Portal Effect
+                doNausea(p);
+                break;
+            case 1:
+                // Zoom-In & Walk Slow
+                doWalkSlow(p);
+                break;
+            case 2:
+                // Zoom-Out & Walk Fast
+                doWalkFast(p);
+                break;
+            case 3:
+                // Blind
+                doBlindness(p);
+                break;
+            case 4:
+                // Hunger
+                doHunger(p);
+                break;
+            case 5:
+                // High Jump
+                doHighJump(p);
+                break;
+            case 6:
+                // Sickness & Slower Hitting
+                doFatigue(p);
+                break;
+            case 7:
+                // Drunk
+                doDrunk(p);
+                break;
+            case 8:
+                // Healing
+                doHealing(p);
+                break;
+            case 9:
+                // Regeneration
+                doRegeneration(p);
+                break;
+            case 10:
+                // Resistance
+                doResistance(p);
+                break;
+            case 11:
+                // Fire Resistance
+                doFireResistance(p);
+                break;
+            case 12:
+                // Water breathing
+                doWaterBreathing(p);
+                break;
+            case 13:
+                // Invisibility
+                doInvisibility(p);
+                break;
+            case 14:
+                // Night Vision
+                doNightVision(p);
+                break;
+            case 15:
+                // Poison
+                doPoison(p);
+                break;
+            case 16:
+                // Wither Poison
+                doWitherPoison(p);
+                break;
+            case 17:
+                // Absorbtion
+                doAbsorption(p);
+                break;
+            case 18:
+                // Saturation
+                doSaturation(p);
+                break;
         }
-
     }
 
-    public void walkWeird(Player p) {
-        int maxpower = plugin.config.getInt("Effects.Nausea.MaxPower");
-        int minpower = plugin.config.getInt("Effects.Nausea.MinPower");
-        int maxtime = plugin.config.getInt("Effects.Nausea.MaxTime") * 20;
-        int mintime = plugin.config.getInt("Effects.Nausea.MinTime") * 20;
 
-        int power = gen.nextInt(maxpower);
-        if (power <= minpower) {
-            power = minpower;
-        }
-        int ran = gen.nextInt(maxtime);
-        if (ran <= mintime) {
-            ran = mintime;
-        }
-        p.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, ran,
+    public void doNausea(Player p) {
+        int maxPower = plugin.config.getInt("Effects.Nausea.MaxPower");
+        int minPower = plugin.config.getInt("Effects.Nausea.MinPower");
+        int maxTime = plugin.config.getInt("Effects.Nausea.MaxTime") * 20;
+        int minTime = plugin.config.getInt("Effects.Nausea.MinTime") * 20;
+
+        int power = filterInt(gen.nextInt(maxPower), minPower);
+        int time = filterInt(gen.nextInt(maxTime), minTime);
+
+        p.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, time,
                 power));
+        removeEffects(p, false, time);
     }
 
-    public void walkSlow(final Player p) {
-        int maxpower = plugin.config.getInt("Effects.SlowWalk.MaxPower");
-        int minpower = plugin.config.getInt("Effects.SlowWalk.MinPower");
-        int maxtime = plugin.config.getInt("Effects.SlowWalk.MaxTime") * 20;
-        int mintime = plugin.config.getInt("Effects.SlowWalk.MinTime") * 20;
+    public void doWalkSlow(final Player p) {
+        int maxPower = plugin.config.getInt("Effects.SlowWalk.MaxPower");
+        int minPower = plugin.config.getInt("Effects.SlowWalk.MinPower");
+        int maxTime = plugin.config.getInt("Effects.SlowWalk.MaxTime") * 20;
+        int minTime = plugin.config.getInt("Effects.SlowWalk.MinTime") * 20;
 
-        int power = gen.nextInt(maxpower);
-        if (power <= minpower) {
-            power = minpower;
-        }
-        int ran = gen.nextInt(maxtime);
-        if (ran <= mintime) {
-            ran = mintime;
-        }
-        p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, ran, power));
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
-                new BukkitRunnable() {
-                    public void run() {
-                        plugin.getOnDrugs().remove(p.getName());
-                    }
-                }, ran);
+        int power = filterInt(gen.nextInt(maxPower), minPower);
+        int time = filterInt(gen.nextInt(maxTime), minTime);
+
+        p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, time, power));
+        removeEffects(p, false, time);
     }
 
-    public void walkFast(final Player p) {
-        int maxpower = plugin.config.getInt("Effects.FastWalk.MaxPower");
-        int minpower = plugin.config.getInt("Effects.FastWalk.MinPower");
-        int maxtime = plugin.config.getInt("Effects.FastWalk.MaxTime") * 20;
-        int mintime = plugin.config.getInt("Effects.FastWalk.MinTime") * 20;
+    public void doWalkFast(final Player p) {
+        int maxPower = plugin.config.getInt("Effects.FastWalk.MaxPower");
+        int minPower = plugin.config.getInt("Effects.FastWalk.MinPower");
+        int maxTime = plugin.config.getInt("Effects.FastWalk.MaxTime") * 20;
+        int minTime = plugin.config.getInt("Effects.FastWalk.MinTime") * 20;
 
-        int power = gen.nextInt(maxpower);
-        if (power <= minpower) {
-            power = minpower;
-        }
-        int ran = gen.nextInt(maxtime);
-        if (ran <= mintime) {
-            ran = mintime;
-        }
-        p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, ran, power));
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
-                new BukkitRunnable() {
-                    public void run() {
-                        plugin.getOnDrugs().remove(p.getName());
-                    }
-                }, ran);
+        int power = filterInt(gen.nextInt(maxPower), minPower);
+        int time = filterInt(gen.nextInt(maxTime), minTime);
+
+        p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, time, power));
+        removeEffects(p, false, time);
     }
 
-    public void blindMe(final Player p) {
-        int maxpower = plugin.config.getInt("Effects.Blindness.MaxPower");
-        int minpower = plugin.config.getInt("Effects.Blindness.MinPower");
-        int maxtime = plugin.config.getInt("Effects.Blindness.MaxTime") * 20;
-        int mintime = plugin.config.getInt("Effects.Blindness.MinTime") * 20;
+    public void doBlindness(final Player p) {
+        int maxPower = plugin.config.getInt("Effects.Blindness.MaxPower");
+        int minPower = plugin.config.getInt("Effects.Blindness.MinPower");
+        int maxTime = plugin.config.getInt("Effects.Blindness.MaxTime") * 20;
+        int minTime = plugin.config.getInt("Effects.Blindness.MinTime") * 20;
 
-        int power = gen.nextInt(maxpower);
-        if (power <= minpower) {
-            power = minpower;
-        }
-        int ran = gen.nextInt(maxtime);
-        if (ran <= mintime) {
-            ran = mintime;
-        }
-        p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, ran,
+        int power = filterInt(gen.nextInt(maxPower), minPower);
+        int time = filterInt(gen.nextInt(maxTime), minTime);
+
+        p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, time,
                 power));
         p.canSee(p);
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
-                new BukkitRunnable() {
-                    public void run() {
-                        plugin.getOnDrugs().remove(p.getName());
-                    }
-                }, ran);
+        removeEffects(p, false, time);
     }
 
-    public void soHungry(final Player p) {
-        int maxpower = plugin.config.getInt("Effects.Hunger.MaxPower");
-        int minpower = plugin.config.getInt("Effects.Hunger.MinPower");
-        int maxtime = plugin.config.getInt("Effects.Hunger.MaxTime") * 20;
-        int mintime = plugin.config.getInt("Effects.Hunger.MinTime") * 20;
+    public void doHunger(final Player p) {
+        int maxPower = plugin.config.getInt("Effects.Hunger.MaxPower");
+        int minPower = plugin.config.getInt("Effects.Hunger.MinPower");
+        int maxTime = plugin.config.getInt("Effects.Hunger.MaxTime") * 20;
+        int minTime = plugin.config.getInt("Effects.Hunger.MinTime") * 20;
 
-        final int food = p.getFoodLevel();
+        final int currFood = p.getFoodLevel();
 
-        int power = gen.nextInt(maxpower);
-        if (power <= minpower) {
-            power = minpower;
-        }
-        int ran = gen.nextInt(maxtime);
-        if (ran <= mintime) {
-            ran = mintime;
-        }
-        p.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, ran, power));
+        int power = filterInt(gen.nextInt(maxPower), minPower);
+        int time = filterInt(gen.nextInt(maxTime), minTime);
+
+        p.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, time, power));
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
-                new BukkitRunnable() {
+                new Runnable() {
                     public void run() {
                         plugin.getOnDrugs().remove(p.getName());
-                        p.setFoodLevel(food / 2);
+                        p.setFoodLevel(currFood / 2);
                     }
-                }, ran);
+                }, time);
     }
 
-    public void feelingJumpy(final Player p) {
-        int maxpower = plugin.config.getInt("Effects.HighJump.MaxPower");
-        int minpower = plugin.config.getInt("Effects.HighJump.MinPower");
-        int maxtime = plugin.config.getInt("Effects.HighJump.MaxTime") * 20;
-        int mintime = plugin.config.getInt("Effects.HighJump.MinTime") * 20;
+    public void doHighJump(final Player p) {
+        int maxPower = plugin.config.getInt("Effects.HighJump.MaxPower");
+        int minPower = plugin.config.getInt("Effects.HighJump.MinPower");
+        int maxTime = plugin.config.getInt("Effects.HighJump.MaxTime") * 20;
+        int minTime = plugin.config.getInt("Effects.HighJump.MinTime") * 20;
 
         plugin.getOnDrugs().add(p.getName());
         plugin.getIsJump().add(p.getName());
 
-        int power = gen.nextInt(maxpower);
-        if (power <= minpower) {
-            power = minpower;
-        }
-        int ran = gen.nextInt(maxtime);
-        if (ran <= mintime) {
-            ran = mintime;
-        }
-        p.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, ran, power));
+        int power = filterInt(gen.nextInt(maxPower), minPower);
+        int time = filterInt(gen.nextInt(maxTime), minTime);
 
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
-                new BukkitRunnable() {
-                    public void run() {
-                        plugin.getOnDrugs().remove(p.getName());
-                        plugin.getIsJump().remove(p.getName());
-                    }
-                }, ran);
+        p.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, time, power));
+        removeEffects(p, true, time);
     }
 
-    public void soSick(final Player p) {
-        int maxpower = plugin.config.getInt("Effects.SlowHit.MaxPower");
-        int minpower = plugin.config.getInt("Effects.SlowHit.MinPower");
-        int maxtime = plugin.config.getInt("Effects.SlowHit.MaxTime") * 20;
-        int mintime = plugin.config.getInt("Effects.SlowHit.MinTime") * 20;
+    public void doFatigue(final Player p) {
+        int maxPower = plugin.config.getInt("Effects.SlowHit.MaxPower");
+        int minPower = plugin.config.getInt("Effects.SlowHit.MinPower");
+        int maxTime = plugin.config.getInt("Effects.SlowHit.MaxTime") * 20;
+        int minTime = plugin.config.getInt("Effects.SlowHit.MinTime") * 20;
 
-        int power = gen.nextInt(maxpower);
-        if (power <= minpower) {
-            power = minpower;
-        }
-        int ran = gen.nextInt(maxtime);
-        if (ran <= mintime) {
-            ran = mintime;
-        }
+        int power = filterInt(gen.nextInt(maxPower), minPower);
+        int time = filterInt(gen.nextInt(maxTime), minTime);
 
-        p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, ran,
+        p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, time,
                 power));
-        p.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, ran,
+        p.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, time,
                 power));
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
-                new BukkitRunnable() {
-                    public void run() {
-                        plugin.getOnDrugs().remove(p.getName());
-                    }
-                }, ran);
+        removeEffects(p, false, time);
     }
 
-    public void healing(final Player p) {
-        int maxpower = plugin.config.getInt("Effects.Healing.MaxPower");
-        int minpower = plugin.config.getInt("Effects.Healing.MinPower");
-        int maxtime = plugin.config.getInt("Effects.Healing.MaxTime") * 20;
-        int mintime = plugin.config.getInt("Effects.Healing.MinTime") * 20;
+    public void doHealing(final Player p) {
+        int maxPower = plugin.config.getInt("Effects.Healing.MaxPower");
+        int minPower = plugin.config.getInt("Effects.Healing.MinPower");
+        int maxTime = plugin.config.getInt("Effects.Healing.MaxTime") * 20;
+        int minTime = plugin.config.getInt("Effects.Healing.MinTime") * 20;
 
-        int power = gen.nextInt(maxpower);
-        if (power <= minpower) {
-            power = minpower;
-        }
-        int ran = gen.nextInt(maxtime);
-        if (ran <= mintime) {
-            ran = mintime;
-        }
+        int power = filterInt(gen.nextInt(maxPower), minPower);
+        int time = filterInt(gen.nextInt(maxTime), minTime);
 
-        p.addPotionEffect(new PotionEffect(PotionEffectType.HEAL, ran, power));
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
-                new BukkitRunnable() {
-                    public void run() {
-                        plugin.getOnDrugs().remove(p.getName());
-                    }
-                }, ran);
+        p.addPotionEffect(new PotionEffect(PotionEffectType.HEAL, time, power));
+        removeEffects(p, false, time);
     }
 
-    public void regeneration(final Player p) {
-        int maxpower = plugin.config.getInt("Effects.Regeneration.MaxPower");
-        int minpower = plugin.config.getInt("Effects.Regeneration.MinPower");
-        int maxtime = plugin.config.getInt("Effects.Regeneration.MaxTime") * 20;
-        int mintime = plugin.config.getInt("Effects.Regeneration.MinTime") * 20;
+    public void doRegeneration(final Player p) {
+        int maxPower = plugin.config.getInt("Effects.Regeneration.MaxPower");
+        int minPower = plugin.config.getInt("Effects.Regeneration.MinPower");
+        int maxTime = plugin.config.getInt("Effects.Regeneration.MaxTime") * 20;
+        int minTime = plugin.config.getInt("Effects.Regeneration.MinTime") * 20;
 
-        int power = gen.nextInt(maxpower);
-        if (power <= minpower) {
-            power = minpower;
-        }
-        int ran = gen.nextInt(maxtime);
-        if (ran <= mintime) {
-            ran = mintime;
-        }
+        int power = filterInt(gen.nextInt(maxPower), minPower);
+        int time = filterInt(gen.nextInt(maxTime), minTime);
 
-        p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, ran,
+        p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, time,
                 power));
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
-                new BukkitRunnable() {
-                    public void run() {
-                        plugin.getOnDrugs().remove(p.getName());
-                    }
-                }, ran);
+        removeEffects(p, false, time);
     }
 
-    public void resistance(final Player p) {
-        int maxpower = plugin.config.getInt("Effects.Resistance.MaxPower");
-        int minpower = plugin.config.getInt("Effects.Resistance.MinPower");
-        int maxtime = plugin.config.getInt("Effects.Resistance.MaxTime") * 20;
-        int mintime = plugin.config.getInt("Effects.Resistance.MinTime") * 20;
+    public void doResistance(final Player p) {
+        int maxPower = plugin.config.getInt("Effects.Resistance.MaxPower");
+        int minPower = plugin.config.getInt("Effects.Resistance.MinPower");
+        int maxTime = plugin.config.getInt("Effects.Resistance.MaxTime") * 20;
+        int minTime = plugin.config.getInt("Effects.Resistance.MinTime") * 20;
 
-        int power = gen.nextInt(maxpower);
-        if (power <= minpower) {
-            power = minpower;
-        }
-        int ran = gen.nextInt(maxtime);
-        if (ran <= mintime) {
-            ran = mintime;
-        }
+        int power = filterInt(gen.nextInt(maxPower), minPower);
+        int time = filterInt(gen.nextInt(maxTime), minTime);
 
         p.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE,
-                ran, power));
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
-                new BukkitRunnable() {
-                    public void run() {
-                        plugin.getOnDrugs().remove(p.getName());
-                    }
-                }, ran);
+                time, power));
+        removeEffects(p, false, time);
     }
 
-    public void fireResistance(final Player p) {
-        int maxpower = plugin.config.getInt("Effects.FireResistance.MaxPower");
-        int minpower = plugin.config.getInt("Effects.FireResistance.MinPower");
-        int maxtime = plugin.config.getInt("Effects.FireResistance.MaxTime") * 20;
-        int mintime = plugin.config.getInt("Effects.FireResistance.MinTime") * 20;
+    public void doFireResistance(final Player p) {
+        int maxPower = plugin.config.getInt("Effects.FireResistance.MaxPower");
+        int minPower = plugin.config.getInt("Effects.FireResistance.MinPower");
+        int maxTime = plugin.config.getInt("Effects.FireResistance.MaxTime") * 20;
+        int minTime = plugin.config.getInt("Effects.FireResistance.MinTime") * 20;
 
-        int power = gen.nextInt(maxpower);
-        if (power <= minpower) {
-            power = minpower;
-        }
-        int ran = gen.nextInt(maxtime);
-        if (ran <= mintime) {
-            ran = mintime;
-        }
+        int power = filterInt(gen.nextInt(maxPower), minPower);
+        int time = filterInt(gen.nextInt(maxTime), minTime);
 
         p.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE,
-                ran, power));
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
-                new BukkitRunnable() {
-                    public void run() {
-                        plugin.getOnDrugs().remove(p.getName());
-                    }
-                }, ran);
+                time, power));
+        removeEffects(p, false, time);
     }
 
-    public void waterBreathe(final Player p) {
-        int maxpower = plugin.config.getInt("Effects.WaterBreathing.MaxPower");
-        int minpower = plugin.config.getInt("Effects.WaterBreathing.MinPower");
-        int maxtime = plugin.config.getInt("Effects.WaterBreathing.MaxTime") * 20;
-        int mintime = plugin.config.getInt("Effects.WaterBreathing.MinTime") * 20;
+    public void doWaterBreathing(final Player p) {
+        int maxPower = plugin.config.getInt("Effects.WaterBreathing.MaxPower");
+        int minPower = plugin.config.getInt("Effects.WaterBreathing.MinPower");
+        int maxTime = plugin.config.getInt("Effects.WaterBreathing.MaxTime") * 20;
+        int minTime = plugin.config.getInt("Effects.WaterBreathing.MinTime") * 20;
 
-        int power = gen.nextInt(maxpower);
-        if (power <= minpower) {
-            power = minpower;
-        }
-        int ran = gen.nextInt(maxtime);
-        if (ran <= mintime) {
-            ran = mintime;
-        }
+        int power = filterInt(gen.nextInt(maxPower), minPower);
+        int time = filterInt(gen.nextInt(maxTime), minTime);
 
         p.addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING,
-                ran, power));
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
-                new BukkitRunnable() {
-                    public void run() {
-                        plugin.getOnDrugs().remove(p.getName());
-                    }
-                }, ran);
+                time, power));
+        removeEffects(p, false, time);
     }
 
-    public void invisibility(final Player p) {
-        int maxpower = plugin.config.getInt("Effects.Invisibility.MaxPower");
-        int minpower = plugin.config.getInt("Effects.Invisibility.MinPower");
-        int maxtime = plugin.config.getInt("Effects.Invisibility.MaxTime") * 20;
-        int mintime = plugin.config.getInt("Effects.Invisibility.MinTime") * 20;
+    public void doInvisibility(final Player p) {
+        int maxPower = plugin.config.getInt("Effects.Invisibility.MaxPower");
+        int minPower = plugin.config.getInt("Effects.Invisibility.MinPower");
+        int maxTime = plugin.config.getInt("Effects.Invisibility.MaxTime") * 20;
+        int minTime = plugin.config.getInt("Effects.Invisibility.MinTime") * 20;
 
-        int power = gen.nextInt(maxpower);
-        if (power <= minpower) {
-            power = minpower;
-        }
-        int ran = gen.nextInt(maxtime);
-        if (ran <= mintime) {
-            ran = mintime;
-        }
+        int power = filterInt(gen.nextInt(maxPower), minPower);
+        int time = filterInt(gen.nextInt(maxTime), minTime);
 
-        p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, ran,
+        p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, time,
                 power));
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
-                new BukkitRunnable() {
-                    public void run() {
-                        plugin.getOnDrugs().remove(p.getName());
-                    }
-                }, ran);
+        removeEffects(p, false, time);
     }
 
-    public void nightVision(final Player p) {
-        int maxpower = plugin.config.getInt("Effects.NightVision.MaxPower");
-        int minpower = plugin.config.getInt("Effects.NightVision.MinPower");
-        int maxtime = plugin.config.getInt("Effects.NightVision.MaxTime") * 20;
-        int mintime = plugin.config.getInt("Effects.NightVision.MinTime") * 20;
+    public void doNightVision(final Player p) {
+        int maxPower = plugin.config.getInt("Effects.NightVision.MaxPower");
+        int minPower = plugin.config.getInt("Effects.NightVision.MinPower");
+        int maxTime = plugin.config.getInt("Effects.NightVision.MaxTime") * 20;
+        int minTime = plugin.config.getInt("Effects.NightVision.MinTime") * 20;
 
-        int power = gen.nextInt(maxpower);
-        if (power <= minpower) {
-            power = minpower;
-        }
-        int ran = gen.nextInt(maxtime);
-        if (ran <= mintime) {
-            ran = mintime;
-        }
+        int power = filterInt(gen.nextInt(maxPower), minPower);
+        int time = filterInt(gen.nextInt(maxTime), minTime);
 
-        p.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, ran,
+        p.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, time,
                 power));
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
-                new BukkitRunnable() {
-                    public void run() {
-                        plugin.getOnDrugs().remove(p.getName());
-                    }
-                }, ran);
+        removeEffects(p, false, time);
     }
 
-    public void poison(final Player p) {
-        int maxpower = plugin.config.getInt("Effects.Poison.MaxPower");
-        int minpower = plugin.config.getInt("Effects.Poison.MinPower");
-        int maxtime = plugin.config.getInt("Effects.Poison.MaxTime") * 20;
-        int mintime = plugin.config.getInt("Effects.Poison.MinTime") * 20;
+    public void doPoison(final Player p) {
+        int maxPower = plugin.config.getInt("Effects.Poison.MaxPower");
+        int minPower = plugin.config.getInt("Effects.Poison.MinPower");
+        int maxTime = plugin.config.getInt("Effects.Poison.MaxTime") * 20;
+        int minTime = plugin.config.getInt("Effects.Poison.MinTime") * 20;
 
-        int power = gen.nextInt(maxpower);
-        if (power <= minpower) {
-            power = minpower;
-        }
-        int ran = gen.nextInt(maxtime);
-        if (ran <= mintime) {
-            ran = mintime;
-        }
+        int power = filterInt(gen.nextInt(maxPower), minPower);
+        int time = filterInt(gen.nextInt(maxTime), minTime);
 
-        p.addPotionEffect(new PotionEffect(PotionEffectType.POISON, ran, power));
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
-                new BukkitRunnable() {
-                    public void run() {
-                        plugin.getOnDrugs().remove(p.getName());
-                    }
-                }, ran);
+        p.addPotionEffect(new PotionEffect(PotionEffectType.POISON, time, power));
+        removeEffects(p, false, time);
     }
 
-    public void witherPoison(final Player p) {
-        int maxpower = plugin.config.getInt("Effects.WitherPoison.MaxPower");
-        int minpower = plugin.config.getInt("Effects.WitherPoison.MinPower");
-        int maxtime = plugin.config.getInt("Effects.WitherPoison.MaxTime") * 20;
-        int mintime = plugin.config.getInt("Effects.WitherPoison.MinTime") * 20;
+    public void doWitherPoison(final Player p) {
+        int maxPower = plugin.config.getInt("Effects.WitherPoison.MaxPower");
+        int minPower = plugin.config.getInt("Effects.WitherPoison.MinPower");
+        int maxTime = plugin.config.getInt("Effects.WitherPoison.MaxTime") * 20;
+        int minTime = plugin.config.getInt("Effects.WitherPoison.MinTime") * 20;
 
-        int power = gen.nextInt(maxpower);
-        if (power <= minpower) {
-            power = minpower;
-        }
-        int ran = gen.nextInt(maxtime);
-        if (ran <= mintime) {
-            ran = mintime;
-        }
+        int power = filterInt(gen.nextInt(maxPower), minPower);
+        int time = filterInt(gen.nextInt(maxTime), minTime);
 
-        p.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, ran, power));
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
-                new BukkitRunnable() {
-                    public void run() {
-                        plugin.getOnDrugs().remove(p.getName());
-                    }
-                }, ran);
+        p.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, time, power));
+        removeEffects(p, false, time);
     }
 
-    public void absorption(final Player p) {
-        int maxpower = plugin.config.getInt("Effects.Absorption.MaxPower");
-        int minpower = plugin.config.getInt("Effects.Absorption.MinPower");
-        int maxtime = plugin.config.getInt("Effects.Absorption.MaxTime") * 20;
-        int mintime = plugin.config.getInt("Effects.Absorption.MinTime") * 20;
+    public void doAbsorption(final Player p) {
+        int maxPower = plugin.config.getInt("Effects.Absorption.MaxPower");
+        int minPower = plugin.config.getInt("Effects.Absorption.MinPower");
+        int maxTime = plugin.config.getInt("Effects.Absorption.MaxTime") * 20;
+        int minTime = plugin.config.getInt("Effects.Absorption.MinTime") * 20;
 
-        int power = gen.nextInt(maxpower);
-        if (power <= minpower) {
-            power = minpower;
-        }
-        int ran = gen.nextInt(maxtime);
-        if (ran <= mintime) {
-            ran = mintime;
-        }
+        int power = filterInt(gen.nextInt(maxPower), minPower);
+        int time = filterInt(gen.nextInt(maxTime), minTime);
 
-        p.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, ran,
+        p.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, time,
                 power));
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
-                new BukkitRunnable() {
-                    public void run() {
-                        plugin.getOnDrugs().remove(p.getName());
-                    }
-                }, ran);
+        removeEffects(p, false, time);
     }
 
-    public void saturation(final Player p) {
-        int maxpower = plugin.config.getInt("Effects.Saturation.MaxPower");
-        int minpower = plugin.config.getInt("Effects.Saturation.MinPower");
-        int maxtime = plugin.config.getInt("Effects.Saturation.MaxTime") * 20;
-        int mintime = plugin.config.getInt("Effects.Saturation.MinTime") * 20;
+    public void doSaturation(final Player p) {
+        int maxPower = plugin.config.getInt("Effects.Saturation.MaxPower");
+        int minPower = plugin.config.getInt("Effects.Saturation.MinPower");
+        int maxTime = plugin.config.getInt("Effects.Saturation.MaxTime") * 20;
+        int minTime = plugin.config.getInt("Effects.Saturation.MinTime") * 20;
 
-        int power = gen.nextInt(maxpower);
-        if (power <= minpower) {
-            power = minpower;
-        }
-        int ran = gen.nextInt(maxtime);
-        if (ran <= mintime) {
-            ran = mintime;
-        }
+        int power = filterInt(gen.nextInt(maxPower), minPower);
+        int time = filterInt(gen.nextInt(maxTime), minTime);
 
-        p.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, ran,
+        p.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, time,
                 power));
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
-                new BukkitRunnable() {
-                    public void run() {
-                        plugin.getOnDrugs().remove(p.getName());
-                    }
-                }, ran);
+        removeEffects(p, false, time);
     }
 
-    public String scramble(String word) {
-        StringBuilder builder = new StringBuilder(word.length());
-        boolean[] used = new boolean[word.length()];
-
-        for (int iScramble = 0; iScramble < word.length(); iScramble++) {
-            int rndIndex;
-            do {
-                rndIndex = new Random().nextInt(word.length());
-            } while (used[rndIndex]);
-            used[rndIndex] = true;
-
-            builder.append(word.charAt(rndIndex));
-        }
-        return builder.toString();
-    }
-
-    public void drunk(final Player p) {
-        int maxtime = plugin.config.getInt("Effects.Drunk.MaxTime") * 20;
-        int mintime = plugin.config.getInt("Effects.Drunk.MinTime") * 20;
+    public void doDrunk(final Player p) {
+        int maxTime = plugin.config.getInt("Effects.Drunk.MaxTime") * 20;
+        int minTime = plugin.config.getInt("Effects.Drunk.MinTime") * 20;
 
         plugin.getDrunk().add(p.getName());
 
-        int ran = gen.nextInt(maxtime);
-        if (ran <= mintime) {
-            ran = mintime;
-        }
+        int time = filterInt(gen.nextInt(maxTime), minTime);
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
-                new BukkitRunnable() {
+                new Runnable() {
                     public void run() {
                         p.sendMessage(plugin.colorize(plugin.config
                                 .getString("Chat.Self.Sober")));
                         plugin.getDrunk().remove(p.getName());
                     }
-                }, ran);
+                }, time);
     }
 
     @SuppressWarnings("deprecation")
-    public void pukeInv(Player p) {
+    public void doPuke(Player p) {
         int itemi = p.getItemInHand().getTypeId();
         short dura = p.getItemInHand().getDurability();
         String puke;
@@ -677,7 +517,7 @@ public class PlayerHandler implements Listener {
         p.updateInventory();
     }
 
-    public void torchYa(Player p) {
+    public void doBurning(Player p) {
         Material itemi = p.getItemInHand().getType();
         short dura = p.getItemInHand().getDurability();
         String hot;
@@ -702,24 +542,20 @@ public class PlayerHandler implements Listener {
         p.setFireTicks(200);
     }
 
-    public void youOd(Player p) {
+    public void doOverdose(Player p) {
         Material itemi = p.getItemInHand().getType();
         short dura = p.getItemInHand().getDurability();
         String death;
 
         if (plugin.config.getBoolean("Options.EnableEffectMessages")) {
             if (dura == 0) {
-                death = plugin.config.getString("Chat.Broadcast.Death")
-                        .replaceAll(
-                                "%drugname%",
-                                plugin.config.getString("DrugIds." + itemi
-                                        + ".DrugName"));
+                death = plugin.config.getString("Chat.Broadcast.Death").replaceAll("%drugname%",
+                        plugin.config.getString("DrugIds." + itemi
+                                + ".DrugName"));
             } else {
-                death = plugin.config.getString("Chat.Broadcast.Death")
-                        .replaceAll(
-                                "%drugname%",
-                                plugin.config.getString("DrugIds." + itemi
-                                        + ":" + dura + ".DrugName"));
+                death = plugin.config.getString("Chat.Broadcast.Death").replaceAll("%drugname%",
+                        plugin.config.getString("DrugIds." + itemi
+                                + ":" + dura + ".DrugName"));
             }
             death = death.replaceAll("%playername%", p.getName());
             Bukkit.broadcastMessage(plugin.colorize(death));
@@ -727,7 +563,7 @@ public class PlayerHandler implements Listener {
         p.setHealth(0);
     }
 
-    public void heartAttack(final Player p) {
+    public void doHeartAttack(final Player p) {
         Material itemi = p.getItemInHand().getType();
         short dura = p.getItemInHand().getDurability();
         String heartAttack;
@@ -752,7 +588,7 @@ public class PlayerHandler implements Listener {
         plugin.getHeartAttack().add(p.getName());
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
-                new BukkitRunnable() {
+                new Runnable() {
                     @Override
                     public void run() {
                         plugin.getHeartAttack().remove(p.getName());
@@ -762,7 +598,7 @@ public class PlayerHandler implements Listener {
             p.setHealth(2);
         }
         Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin,
-                new BukkitRunnable() {
+                new Runnable() {
                     @Override
                     public void run() {
                         if (plugin.getHeartAttack().contains(p.getName())) {
@@ -774,5 +610,37 @@ public class PlayerHandler implements Listener {
                         }
                     }
                 }, 0L, 3L);
+    }
+
+    public String scramble(String word) {
+        StringBuilder builder = new StringBuilder(word.length());
+        boolean[] used = new boolean[word.length()];
+
+        for (int iScramble = 0; iScramble < word.length(); iScramble++) {
+            int rndIndex;
+            do {
+                rndIndex = new Random().nextInt(word.length());
+            } while (used[rndIndex]);
+            used[rndIndex] = true;
+
+            builder.append(word.charAt(rndIndex));
+        }
+        return builder.toString();
+    }
+
+    private int filterInt(int i, int min) {
+        return (i < min) ? min : i;
+    }
+
+    private void removeEffects(final Player p, final boolean jump, int time) {
+        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
+                new Runnable() {
+                    public void run() {
+                        plugin.getOnDrugs().remove(p.getName());
+                        if (jump) {
+                            plugin.getIsJump().remove(p.getName());
+                        }
+                    }
+                }, time);
     }
 }
