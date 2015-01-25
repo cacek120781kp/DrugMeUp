@@ -89,7 +89,7 @@ public class DrugMeUp extends JavaPlugin {
             boolean smoke = config.getBoolean("DrugIds." + key + ".Smoke");
             boolean negative = (negChance != 0);
             boolean sneak = config.getBoolean("DrugIds." + key + ".MustSneak");
-            boolean edible = item.getType().isEdible();
+            boolean edible = item.getType().isEdible() || item.getType().name().equalsIgnoreCase("POTION");
             drugs.put(item, new Drug(item, name, message, effects, negatives, negChance, type, smoke, negative,
                     sneak, edible));
         }
