@@ -31,28 +31,12 @@ public class PlayerHandler implements Listener {
         doMessage(p, plugin.getDrug(drug));
         doEffects(p, plugin.getDrug(drug));
         doSmoke(p, plugin.getDrug(drug));
-        if (plugin.config.getBoolean("Options.EnableNegativeEffects")) {
-            doNegatives(p, plugin.getDrug(drug));
-        }
+        doNegatives(p, plugin.getDrug(drug));
     }
 
     private void doMessage(Player p, Drug drug) {
-        String mat = drug.getItemStack().getType().name();
-        short dmg = drug.getItemStack().getDurability();
-        boolean hasMessage = false;
-        String message = "";
-        if (dmg == 0) {
-            if (plugin.config.getString("DrugIds." + mat + ".Message") != null) {
-                hasMessage = true;
-                message = plugin.config.getString("DrugIds." + mat + ".Message");
-            }
-        } else {
-            if (plugin.config.getString("DrugIds." + mat + ":" + dmg + ".Message") != null) {
-                hasMessage = true;
-                message = plugin.config.getString("DrugIds." + mat + ":" + dmg + ".Message");
-            }
-        }
-        p.sendMessage(plugin.colorize(hasMessage ? message : plugin.config.getString("Chat.Self.TakeDrugs")
+        boolean hasMessage = !drug.getMessage().equalsIgnoreCase("");
+        p.sendMessage(plugin.colorize((hasMessage) ? drug.getMessage() : plugin.config.getString("Chat.Self.TakeDrugs")
                 .replaceAll("%drugname%", drug.getName())));
     }
 
@@ -88,33 +72,39 @@ public class PlayerHandler implements Listener {
     }
 
     public void doNegatives(Player p, Drug drug) {
-        Random ran = new Random();
-        int negChance = drug.getNegativeChance();
-        int random = ran.nextInt(100);
-        int currentNeg = ran.nextInt(4);
-        if (random > 100) {
-            random = 100;
-        } else if (random < 1) {
-            random = 1;
-        }
-        filterInt(currentNeg, 1);
+        if (drug.isNegative()) {
+            Random ran = new Random();
+            int negChance = drug.getNegativeChance();
+            int random = ran.nextInt(100);
+            int currentNeg = 0;
+            while (!drug.getNegatives().contains(currentNeg)) {
+                currentNeg = ran.nextInt(4);
+            }
+            if (random > 100) {
+                random = 100;
+            } else if (random < 1) {
+                random = 1;
+            }
+            filterInt(currentNeg, 1);
 
-        if (random <= negChance) {
-            switch (currentNeg) {
-                case 1:
-                    doPuke(p);
-                    break;
-                case 2:
-                    doBurning(p);
-                    break;
-                case 3:
-                    doHeartAttack(p);
-                    break;
-                case 4:
-                    doOverdose(p);
-                    break;
+            if (random <= negChance) {
+                switch (currentNeg) {
+                    case 1:
+                        doPuke(p);
+                        break;
+                    case 2:
+                        doBurning(p);
+                        break;
+                    case 3:
+                        doHeartAttack(p);
+                        break;
+                    case 4:
+                        doOverdose(p);
+                        break;
+                }
             }
         }
+
     }
 
     public void applyEffect(Player p, int i) {

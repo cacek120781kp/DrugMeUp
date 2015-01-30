@@ -73,26 +73,34 @@ public class DrugMeUp extends JavaPlugin {
     /* Gather the drugs into their own, separate objects */
     private void gatherDrugs() {
         for (String key : config.getConfigurationSection("DrugIds").getKeys(false)) {
-            Material mat = Material.getMaterial(key.split(":")[0]);
-            short dmg = (key.split(":").length == 1) ? 0 : Short.parseShort(key.split(":")[1]);
-            ItemStack item = new ItemStack(mat, 1, dmg);
-            String name = config.getString("DrugIds." + key + ".DrugName");
-            String message = (config.getString("DrugIds." + key + ".Message") != null) ? config.getString("DrugIds" +
-                    "." + key + ".Message") : "";
-            String[] effects = config.getString("DrugIds." + key + ".Effect")
-                    .replaceAll(" ", "").split(",");
-            String[] negatives = config.getString("DrugIds." + key + ".Negatives")
-                    .replaceAll(" ", "").split(",");
-            int negChance = (config.getInt("DrugIds." + key + ".NegChance") != 0) ? config.getInt("DrugIds." + key
-                    + ".NegChance") : 0;
-            boolean type = config.getString("DrugIds." + key + ".Type").equalsIgnoreCase("All");
-            boolean smoke = config.getBoolean("DrugIds." + key + ".Smoke");
-            boolean negative = (negChance != 0);
-            boolean sneak = config.getBoolean("DrugIds." + key + ".MustSneak");
-            boolean edible = item.getType().isEdible() || item.getType().name().equalsIgnoreCase("POTION");
-            drugs.put(item, new Drug(item, name, message, effects, negatives, negChance, type, smoke, negative,
-                    sneak, edible));
+            String path = "DrugIds." + key + ".";
+            if (!drugProblem(key)) {
+                Material mat = Material.getMaterial(key.split(":")[0]);
+                short dmg = (key.split(":").length == 1) ? 0 : Short.parseShort(key.split(":")[1]);
+                ItemStack item = new ItemStack(mat, 1, dmg);
+                String name = config.getString(path + "DrugName");
+                String message = (config.getString(path + "Message") != null) ? config.getString(path + "Message") : "";
+                String[] effects = config.getString(path + "Effect").replaceAll(" ", "").split(",");
+                String[] negatives = config.getString(path + "Negatives").replaceAll(" ", "").split(",");
+                int negChance = (config.getInt(path + "NegChance") != 0) ? config.getInt(path + "NegChance") : 0;
+                boolean type = (config.getString(path + "Type") == null) || config.getString(path + "Type")
+                        .equalsIgnoreCase("All");
+                boolean smoke = config.getBoolean(path + "Smoke");
+                boolean negative = (negChance != 0);
+                boolean sneak = config.getBoolean(path + "MustSneak");
+                boolean edible = item.getType().isEdible() || item.getType().name().equalsIgnoreCase("POTION");
+                drugs.put(item, new Drug(item, name, message, effects, negatives, negChance, type, smoke, negative,
+                        sneak, edible));
+            } else {
+                log.info("Problem loading drug '" + key + "'!");
+            }
         }
+    }
+
+    private boolean drugProblem(String key) {
+        String path = "DrugIds." + key + ".";
+        return config.getString(path + "DrugName") == null || config.getString(path + "Effect") == null ||
+                config.getString(path + "Negatives") == null || config.getString(path + "Type") == null;
     }
 
     public PlayerHandler getPlayerHandler() {
