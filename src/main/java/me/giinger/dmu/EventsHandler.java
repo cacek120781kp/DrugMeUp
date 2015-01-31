@@ -24,9 +24,9 @@ public class EventsHandler implements Listener {
     final DrugMeUp plugin;
     final PlayerHandler pHandler;
 
-    public EventsHandler(DrugMeUp plugin) {
+    public EventsHandler(DrugMeUp plugin, PlayerHandler pHandler) {
         this.plugin = plugin;
-        this.pHandler = plugin.getPlayerHandler();
+        this.pHandler = pHandler;
     }
 
     @EventHandler
@@ -110,7 +110,7 @@ public class EventsHandler implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent e) throws IOException {
-        if (plugin.isUpdate()) {
+        if (plugin.isUpdateCheck() && !plugin.isUpdateDownload()) {
             if (e.getPlayer().hasPermission("drugs.updates")
                     || e.getPlayer().isOp()) {
                 String[] updateNotif = new String[4];
@@ -122,9 +122,9 @@ public class EventsHandler implements Listener {
                     e.getPlayer().sendMessage(ChatColor.RED + s);
                 }
             }
-        } else if (plugin.getIsDownloaded()) {
+        } else if (plugin.isUpdateDownload()) {
             if (e.getPlayer().hasPermission("drugs.updates") || e.getPlayer().isOp()) {
-                String[] updateNotif = new String[4];
+                String[] updateNotif = new String[5];
                 updateNotif[0] = " *";
                 updateNotif[1] = " * [DrugMeUp] Update Downloaded! ";
                 updateNotif[2] = " * Restart for changes to take effect!";
@@ -141,28 +141,17 @@ public class EventsHandler implements Listener {
     public void onPlayerItemConsume(final PlayerItemConsumeEvent e) {
         Player p = e.getPlayer();
         ItemStack i = e.getItem();
-        if (i.getType() == Material.MILK_BUCKET) {
-            if (plugin.isDrug(i)) {
-                ItemStack milk = new ItemStack(Material.MILK_BUCKET, 1);
-                for (ItemStack i2 : p.getInventory().getContents()) {
-                    if (i2 != null) {
-                        if (i2 == milk) {
-                            p.getInventory().remove(i2);
-                        }
-                    }
-                }
-                e.setCancelled(true);
-            }
+        if (plugin.isDrug(i) && i.getType() == Material.MILK_BUCKET) {
+            ItemStack milk = new ItemStack(Material.MILK_BUCKET, 1);
+            p.getInventory().removeItem(milk);
+            e.setCancelled(true);
         }
         if (plugin.isDrug(i)) {
-            if (plugin.config.getBoolean((i.getDurability() == 0) ? "DrugIds." + i.getType().name() + ".MustSneak" :
-                    "DrugIds." + i.getType().name() + ":" + i.getDurability() + ".MustSneak")) {
-                if (p.isSneaking()) {
-                    pHandler.doDrug(p, i);
-                }
-            } else {
-                pHandler.doDrug(p, i);
+            Drug drug = plugin.getDrug(i);
+            if (drug.isSneak() && !p.isSneaking()) {
+                return;
             }
+            pHandler.doDrug(p, i);
         }
     }
 

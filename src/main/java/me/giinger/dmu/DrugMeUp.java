@@ -1,6 +1,5 @@
 package me.giinger.dmu;
 
-import me.giinger.dmu.Updater.UpdateType;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -10,7 +9,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 
@@ -35,39 +33,39 @@ public class DrugMeUp extends JavaPlugin {
     private ArrayList<String> heartattack = new ArrayList<>();
     private ArrayList<World> worlds = new ArrayList<>();
     private HashMap<ItemStack, Drug> drugs = new HashMap<>();
-    private boolean isUpdate;
-    private boolean isDownloaded;
     private File matList = new File("plugins/DrugMeUp/materialList.txt");
     private File oldDir = new File("plugins/DrugMeUp/Old_Configs/");
     private PlayerHandler playerHandler = new PlayerHandler(this);
     private Updater updater = new Updater(this, 35506, this.getFile(), Updater.UpdateType.NO_DOWNLOAD, true);
+    private boolean hasCheckedUpdate = false;
+    private boolean hasDownloadedUpdate = false;
 
     public void onDisable() {
         log.info("Disabled!");
     }
 
     public void onEnable() {
-        log.info("Enabled!");
-        getServer().getPluginManager().registerEvents(new EventsHandler(this), this);
+        /* Event Handler */
+        getServer().getPluginManager().registerEvents(new EventsHandler(this, playerHandler), this);
 
+        /* Configuration Setup */
         saveDefaultConfig();
         createMaterialList();
         configUpdate();
-
         config = getConfig();
 
+        /* Gather Drugs in Config */
         gatherDrugs();
 
-        if (config.getBoolean("Options.AutoUpdateChecker")
-                && !config.getBoolean("Options.AutoUpdateDownload")) {
-            isUpdate(UpdateType.NO_DOWNLOAD);
-        } else if (config.getBoolean("Options.AutoUpdateDownload")) {
-            isUpdate(UpdateType.DEFAULT);
-        }
-
+        /* Gather worlds */
         if (isMultiworld()) {
             gatherWorlds();
         }
+
+        log.info("Enabled!");
+
+        /* Check for updates */
+        isUpdateCheck();
     }
 
     /* Gather the drugs into their own, separate objects */
@@ -97,14 +95,11 @@ public class DrugMeUp extends JavaPlugin {
         }
     }
 
+    /* Check for any problems with the drugs in the config */
     private boolean drugProblem(String key) {
         String path = "DrugIds." + key + ".";
         return config.getString(path + "DrugName") == null || config.getString(path + "Effect") == null ||
                 config.getString(path + "Negatives") == null || config.getString(path + "Type") == null;
-    }
-
-    public PlayerHandler getPlayerHandler() {
-        return playerHandler;
     }
 
     public Player getPlayer(String name) {
@@ -253,28 +248,40 @@ public class DrugMeUp extends JavaPlugin {
     }
 
     /* Check for config update */
-    public boolean isUpdate(UpdateType type) {
-        PluginDescriptionFile pdfFile = getDescription();
-        if (type == UpdateType.DEFAULT) {
-            if (!updater.getLatestName().equalsIgnoreCase(
-                    "drugmeup v" + pdfFile.getVersion())) {
-                isDownloaded = true;
-            }
-        } else if (type == UpdateType.NO_DOWNLOAD) {
-            Bukkit.getConsoleSender()
-                    .sendMessage(
-                            ChatColor.RED
-                                    + ""
-                                    + ChatColor.BOLD
+    public boolean isUpdateCheck() {
+        if (config.getBoolean("Options.AutoUpdateDownload")) {
+            isUpdateDownload();
+            return true;
+        }
+        if (config.getBoolean("Options.AutoUpdateChecker")) {
+            if (!updater.getLatestName().equalsIgnoreCase("drugmeup v" + getDescription().getVersion())) {
+                if (!hasCheckedUpdate) {
+                    Bukkit.getConsoleSender()
+                            .sendMessage(ChatColor.RED
                                     + System.lineSeparator()
                                     + System.lineSeparator()
                                     + "[DrugMeUp] Update Available! "
                                     + System.lineSeparator()
                                     + "Download it at: dev.bukkit.org/server-mods/drugmeup"
                                     + System.lineSeparator() + ChatColor.RESET);
-            isUpdate = true;
+                    hasCheckedUpdate = true;
+                }
+            }
+            return true;
         }
+        return false;
+    }
 
+    public boolean isUpdateDownload() {
+        if (config.getBoolean("Options.AutoUpdateDownload")) {
+            if (!updater.getLatestName().equalsIgnoreCase("drugmeup v" + getDescription().getVersion())) {
+                if (!hasDownloadedUpdate) {
+                    updater = new Updater(this, 35506, this.getFile(), Updater.UpdateType.DEFAULT, true);
+                    hasDownloadedUpdate = true;
+                }
+                return true;
+            }
+        }
         return false;
     }
 
@@ -319,16 +326,6 @@ public class DrugMeUp extends JavaPlugin {
     /* Get everyone who has drug-induced jump boost */
     public List<String> getIsJump() {
         return this.isJump;
-    }
-
-    /* Check if there's an update */
-    public boolean isUpdate() {
-        return this.isUpdate;
-    }
-
-    /* Check if the update should be automatically downloaded */
-    public boolean getIsDownloaded() {
-        return this.isDownloaded;
     }
 
     /* Check if the itemstack is a type of drug */
