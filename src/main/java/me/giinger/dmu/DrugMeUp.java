@@ -145,19 +145,15 @@ public class DrugMeUp extends JavaPlugin {
                         if (isMultiworld()) {
                             gatherWorlds();
                         }
-                        if (sender instanceof Player) {
-                            sender.sendMessage(ChatColor.GREEN
-                                    + "DrugMeUp Reloaded!");
-                            return true;
-                        }
-                        sender.sendMessage("[DrugMeUp] Reloaded!");
+                        sender.sendMessage(ChatColor.GREEN
+                                + "[DrugMeUp] Reloaded!");
                         return true;
                     }
                 }
             } else if (args.length == 2) {
-                Player p = getPlayer(args[1]);
                 if (args[0].equalsIgnoreCase("cleardrugs")) {
                     if (sender.hasPermission("drugs.cleardrugs")) {
+                        Player p = getPlayer(args[1]);
                         if (p == null) {
                             if (sender instanceof Player) {
                                 sender.sendMessage(ChatColor.RED + "[DrugMeUp] '" + args[1] + "' is not online.");
@@ -222,7 +218,7 @@ public class DrugMeUp extends JavaPlugin {
             if (needUpdate) {
                 String string;
                 if (saveOld) {
-                    string = ChatColor.RED + "" + ChatColor.BOLD
+                    string = ChatColor.RED
                             + "[DrugMeUp] Config Saved & Regenerated! Update new one to your liking."
                             + ChatColor.RESET;
                     oldDir.mkdir();
