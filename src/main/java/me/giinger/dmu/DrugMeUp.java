@@ -327,7 +327,9 @@ public class DrugMeUp extends JavaPlugin {
     /* Check if the itemstack is a type of drug */
     public boolean isDrug(ItemStack item) {
         for (Drug drug : drugs.values()) {
-            if (drug.getItemStack().getType().name().equalsIgnoreCase(item.getType().name())) {
+            Material mat = drug.getItemStack().getType();
+            short dmg = drug.getItemStack().getDurability();
+            if (mat.name().equalsIgnoreCase(item.getType().name()) && dmg == item.getDurability()) {
                 return true;
             }
         }
