@@ -22,19 +22,18 @@ public class DrugMeUp extends JavaPlugin {
     private DrugHandler dHandler;
     private PlayerHandler pHandler;
 
-
     public void onDisable() {
         log.info("Disabled!");
     }
 
     public void onEnable() {
-        /* Event Handler */
-        getServer().getPluginManager().registerEvents(new EventsHandler(this), this);
-
         /* Handler init */
         cHandler = new ConfigHandler(this);
         dHandler = new DrugHandler(this);
         pHandler = new PlayerHandler(this);
+
+        /* Event Handler */
+        getServer().getPluginManager().registerEvents(new EventsHandler(this), this);
 
         /* Configuration Setup */
         saveDefaultConfig();
@@ -51,8 +50,7 @@ public class DrugMeUp extends JavaPlugin {
         cHandler.isUpdateCheck();
 
         /* Gather Drugs in Config */
-        dHandler.gatherDrugs();
-
+        log.info(dHandler.gatherDrugs() + " Drugs Loaded!");
         log.info("Enabled!");
     }
 
@@ -127,7 +125,7 @@ public class DrugMeUp extends JavaPlugin {
         return null;
     }
 
-    ConfigHandler getConfigHandler() {
+    public ConfigHandler getConfigHandler() {
         return cHandler;
     }
 

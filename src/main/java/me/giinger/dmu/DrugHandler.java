@@ -26,7 +26,9 @@ public class DrugHandler {
      */
     public Drug getDrug(ItemStack item) {
         for (Drug drug : getDrugs()) {
-            if (drug.getItemStack().getType().name().equalsIgnoreCase(item.getType().name())) {
+            Material drugMat = drug.getItemStack().getType();
+            short drugDmg = drug.getItemStack().getDurability();
+            if (drugMat == item.getType() && drugDmg == item.getDurability()) {
                 return drug;
             }
         }
@@ -36,13 +38,15 @@ public class DrugHandler {
     /**
      * Get Drug instance from Material
      *
-     * @param material The Material
+     * @param mat The Material
      * @return The Drug instance
      */
 
-    public Drug getDrug(Material material) {
+    public Drug getDrug(Material mat, short dmg) {
         for (Drug drug : getDrugs()) {
-            if (drug.getItemStack().getType() == material) {
+            Material drugMat = drug.getItemStack().getType();
+            short drugDmg = drug.getItemStack().getDurability();
+            if (drugMat == mat && drugDmg == dmg) {
                 return drug;
             }
         }
@@ -63,17 +67,7 @@ public class DrugHandler {
         }
         return null;
     }
-
-    /**
-     * Get the drug's name
-     *
-     * @param drug The drug
-     * @return The drugs name
-     */
-    public String getDrugName(Drug drug) {
-        return drug.getName();
-    }
-
+    
     /**
      * Get the list of Drugs
      *
@@ -110,7 +104,7 @@ public class DrugHandler {
         for (Drug drug : getDrugs()) {
             Material drugMat = drug.getItemStack().getType();
             short drugDmg = drug.getItemStack().getDurability();
-            if (drugMat == mat && drugDmg == dmg) {
+            if (drugMat.name().equalsIgnoreCase(mat.name()) && drugDmg == dmg) {
                 return true;
             }
         }
@@ -120,7 +114,8 @@ public class DrugHandler {
     /**
      * Gather a collection full of Drugs
      */
-    void gatherDrugs() {
+    int gatherDrugs() {
+        int totalDrugs = 0;
         for (String key : config.getConfigurationSection("DrugIds").getKeys(false)) {
             String path = "DrugIds." + key + ".";
             if (!drugProblem(key)) {
@@ -140,10 +135,12 @@ public class DrugHandler {
                 boolean edible = item.getType().isEdible() || item.getType().name().equalsIgnoreCase("POTION");
                 drugs.put(item, new Drug(item, name, message, effects, negatives, negChance, type, smoke, negative,
                         sneak, edible));
+                totalDrugs++;
             } else {
                 plugin.log.info("Problem loading drug '" + key + "'!");
             }
         }
+        return totalDrugs;
     }
 
     /**

@@ -4,7 +4,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -17,8 +16,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 @SuppressWarnings("UnusedDeclaration")
 public class EventsHandler implements Listener {
@@ -27,7 +24,6 @@ public class EventsHandler implements Listener {
     private final ConfigHandler cHandler;
     private final PlayerHandler pHandler;
     private final DrugHandler dHandler;
-    private ArrayList<String> noplace = new ArrayList<>();
 
     public EventsHandler(DrugMeUp plugin) {
         this.plugin = plugin;
@@ -39,7 +35,7 @@ public class EventsHandler implements Listener {
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
         Player p = event.getPlayer();
-        if (noplace.contains(p.getName())) {
+        if (pHandler.getNoPlace().contains(p.getName())) {
             event.setCancelled(true);
         }
     }
@@ -60,12 +56,12 @@ public class EventsHandler implements Listener {
         if (pHandler.getIsJump().contains(p.getName())) {
             pHandler.getIsJump().remove(p.getName());
         }
-        if (noplace.contains(p.getName())) {
-            noplace.remove(p.getName());
+        if (pHandler.getNoPlace().contains(p.getName())) {
+            pHandler.getNoPlace().remove(p.getName());
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler
     public void onPlayerInteract(PlayerInteractEvent e) {
         Player player = e.getPlayer();
         ItemStack item = player.getItemInHand();
@@ -85,7 +81,7 @@ public class EventsHandler implements Listener {
                                 // Return because edibles are handled by PlayerItemConsumeEvent
                                 return;
                             }
-                            pHandler.doDrug(player, item);
+                            pHandler.doDrug(player, dHandler.getDrug(item));
                         }
                     }
                 }
@@ -93,7 +89,7 @@ public class EventsHandler implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler
     public void onEntityDamage(EntityDamageEvent e) {
         if (e.getEntity() instanceof Player) {
             if (pHandler.getIsJump().contains((e.getEntity()).getName())) {
@@ -106,7 +102,7 @@ public class EventsHandler implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent e) {
         if (pHandler.getDrunk().contains(e.getPlayer().getName())) {
             String initial = e.getMessage();
@@ -115,7 +111,7 @@ public class EventsHandler implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) throws IOException {
         if (cHandler.isUpdateCheck() && !cHandler.isUpdateDownload()) {
             if (e.getPlayer().hasPermission("drugs.updates")
@@ -144,7 +140,7 @@ public class EventsHandler implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler
     public void onPlayerItemConsume(final PlayerItemConsumeEvent e) {
         Player p = e.getPlayer();
         ItemStack i = e.getItem();
@@ -158,13 +154,7 @@ public class EventsHandler implements Listener {
             if (drug.isSneak() && !p.isSneaking()) {
                 return;
             }
-            pHandler.doDrug(p, i);
+            pHandler.doDrug(p, dHandler.getDrug(i));
         }
     }
-
-    /* Get everyone who can't place blocks */
-    public List<String> getNoPlace() {
-        return noplace;
-    }
-
 }

@@ -20,19 +20,20 @@ public class ConfigHandler {
     private ArrayList<World> worlds = new ArrayList<>();
     private File matList = new File("plugins/DrugMeUp/materialList.txt");
     private File oldDir = new File("plugins/DrugMeUp/Old_Configs/");
-    private Updater updater = new Updater(plugin, 35506, plugin.file, Updater.UpdateType.NO_DOWNLOAD, true);
+    private Updater updater;
     private boolean hasCheckedUpdate = false;
     private boolean hasDownloadedUpdate = false;
 
     ConfigHandler(DrugMeUp plugin) {
         this.plugin = plugin;
         this.config = plugin.config;
+        this.updater = new Updater(plugin, 35506, plugin.file, Updater.UpdateType.NO_DOWNLOAD, true);
     }
 
     /**
      * Generate a list of all current Materials in MineCraft
      */
-    public void createMaterialList() {
+    void createMaterialList() {
         try {
             if (!matList.exists()) {
                 matList.createNewFile();
@@ -57,7 +58,7 @@ public class ConfigHandler {
      *
      * @return If update was needed / successful
      */
-    public boolean configUpdate() {
+    boolean configUpdate() {
         try {
             File file = new File(plugin.getDataFolder(), "config.yml");
             BufferedReader br = new BufferedReader(new FileReader(file));
@@ -115,7 +116,7 @@ public class ConfigHandler {
      *
      * @return If there's a checkable update
      */
-    public boolean isUpdateCheck() {
+    boolean isUpdateCheck() {
         if (config.getBoolean("Options.AutoUpdateDownload")) {
             isUpdateDownload();
             return true;
@@ -144,7 +145,7 @@ public class ConfigHandler {
      *
      * @return If there's a downloadable update
      */
-    public boolean isUpdateDownload() {
+    boolean isUpdateDownload() {
         if (config.getBoolean("Options.AutoUpdateDownload")) {
             if (!updater.getLatestName().equalsIgnoreCase("drugmeup v" + plugin.getDescription().getVersion())) {
                 if (!hasDownloadedUpdate) {
@@ -176,7 +177,7 @@ public class ConfigHandler {
     /**
      * Gather the worlds the plugin is using
      */
-    public void gatherWorlds() {
+    void gatherWorlds() {
         String[] inConfig = config.getString("Options.Worlds").split(",");
         for (String s : inConfig) {
             worlds.add(Bukkit.getWorld(s));
@@ -186,7 +187,7 @@ public class ConfigHandler {
     /**
      * Clear world collection
      */
-    public void clearWorlds() {
+    void clearWorlds() {
         worlds.clear();
     }
 }

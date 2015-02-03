@@ -163,10 +163,10 @@ DrugIds:
     DrugName: "&5Wild &cShrooms"
     MustSneak: true
   PAPER:
-    Effect:
+    Effect: 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
     Negatives: 1,3
     NegChance: 5
-    Type: all
+    Type: All
     Smoke: false
     DrugName: "&2L&eS&4D"
 Chat:
@@ -176,7 +176,7 @@ Chat:
     Puke: "&2* %playername% violently pukes his guts out"
     HeartAttack: "&c* %playername% had a heart attack!"
   Self:
-    TakeDrugs: "&7You have taken %drugname%!"
+    TakeDrugs: "&7You have taken %drugname%&7!"
     Sober: "&aYou begin to feel sober!"
   Errors:
     NoPerms: "&cYou don't have permission for that!"

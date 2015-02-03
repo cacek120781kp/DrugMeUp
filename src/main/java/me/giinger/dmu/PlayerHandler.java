@@ -12,35 +12,38 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import java.util.Random;
 
 public class PlayerHandler implements Listener {
 
-    Random gen = new Random();
-    public final DrugMeUp plugin;
-    private DrugHandler dHandler;
-
+    private Random gen = new Random();
+    private final DrugMeUp plugin;
     private ArrayList<String> onDrugs = new ArrayList<>();
     private ArrayList<String> isJump = new ArrayList<>();
     private ArrayList<String> drunk = new ArrayList<>();
     private ArrayList<String> heartattack = new ArrayList<>();
+    private ArrayList<String> noPlace = new ArrayList<>();
 
     public PlayerHandler(DrugMeUp plugin) {
         this.plugin = plugin;
-        this.dHandler = plugin.getDrugHandler();
     }
 
-    public void doDrug(Player p, ItemStack drug) {
-        if (drug.getAmount() > 1) {
-            drug.setAmount(drug.getAmount() - 1);
+    public void doDrug(Player p, Drug drug) {
+        doRemoveDrug(p, drug);
+        doMessage(p, drug);
+        doEffects(p, drug);
+        doSmoke(p, drug);
+        doNegatives(p, drug);
+    }
+
+    private void doRemoveDrug(Player p, Drug drug) {
+        ItemStack dItem = drug.getItemStack();
+        if (dItem.getAmount() > 1) {
+            dItem.setAmount(dItem.getAmount() - 1);
         } else {
-            p.getInventory().removeItem(drug);
+            p.getInventory().removeItem(dItem);
         }
-        doMessage(p, dHandler.getDrug(drug));
-        doEffects(p, dHandler.getDrug(drug));
-        doSmoke(p, dHandler.getDrug(drug));
-        doNegatives(p, dHandler.getDrug(drug));
     }
 
     private void doMessage(Player p, Drug drug) {
@@ -643,23 +646,38 @@ public class PlayerHandler implements Listener {
                 }, time);
     }
 
-    /* Get everyone who has scrambled text */
-    public List<String> getDrunk() {
+    /**
+     * @return A collection of all drunk players
+     */
+    public Collection<String> getDrunk() {
         return this.drunk;
     }
 
-    /* Get everyone who is on drugs */
-    public List<String> getOnDrugs() {
+    /**
+     * @return A collection of all players on drugs
+     */
+    public Collection<String> getOnDrugs() {
         return this.onDrugs;
     }
 
-    /* Get everyone who is having a heart attack */
-    public List<String> getHeartAttack() {
+    /**
+     * @return A collection of all players having a heart attack
+     */
+    public Collection<String> getHeartAttack() {
         return this.heartattack;
     }
 
-    /* Get everyone who has drug-induced jump boost */
-    public List<String> getIsJump() {
+    /**
+     * @return A collection of all players that have high-jump
+     */
+    public Collection<String> getIsJump() {
         return this.isJump;
+    }
+
+    /**
+     * @return A collection of all players who can't place blocks
+     */
+    public Collection<String> getNoPlace() {
+        return noPlace;
     }
 }
