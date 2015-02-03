@@ -477,7 +477,7 @@ public class PlayerHandler implements Listener {
         short dura = p.getItemInHand().getDurability();
         String puke;
 
-        if (plugin.config.getBoolean("Options.EnableEffectMessages")) {
+        if (plugin.config.getBoolean("Options.EnableBroadcastMessages")) {
             if (dura == 0) {
                 puke = plugin.config.getString("Chat.Broadcast.Puke")
                         .replaceAll(
@@ -512,7 +512,7 @@ public class PlayerHandler implements Listener {
         short dura = p.getItemInHand().getDurability();
         String hot;
 
-        if (plugin.config.getBoolean("Options.EnableEffectMessages")) {
+        if (plugin.config.getBoolean("Options.EnableBroadcastMessages")) {
             if (dura == 0) {
                 hot = plugin.config.getString("Chat.Broadcast.Burning")
                         .replaceAll(
@@ -537,7 +537,7 @@ public class PlayerHandler implements Listener {
         short dura = p.getItemInHand().getDurability();
         String death;
 
-        if (plugin.config.getBoolean("Options.EnableEffectMessages")) {
+        if (plugin.config.getBoolean("Options.EnableBroadcastMessages")) {
             if (dura == 0) {
                 death = plugin.config.getString("Chat.Broadcast.Death").replaceAll("%drugname%",
                         plugin.config.getString("DrugIds." + itemi
@@ -558,7 +558,7 @@ public class PlayerHandler implements Listener {
         short dura = p.getItemInHand().getDurability();
         String heartAttack;
 
-        if (plugin.config.getBoolean("Options.EnableEffectMessages")) {
+        if (plugin.config.getBoolean("Options.EnableBroadcastMessages")) {
             if (dura == 0) {
                 heartAttack = plugin.config.getString(
                         "Chat.Broadcast.HeartAttack").replaceAll(

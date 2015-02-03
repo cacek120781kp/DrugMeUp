@@ -178,7 +178,7 @@ Options:
   AutoUpdateChecker: true
   AutoUpdateDownload: true
   SaveOldConfigs: true
+  EnableBroadcastMessages: true
   EnableNegativeEffects: true
-  EnableEffectMessages: true
   EnableJumpProtection: true
 DO_NOT_TOUCH: 0.9.3
