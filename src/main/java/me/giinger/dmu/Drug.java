@@ -6,7 +6,6 @@ import java.util.ArrayList;
 
 @SuppressWarnings("UnusedDeclaration")
 public class Drug {
-
     private ItemStack itemStack;
     private String name;
     private String message;

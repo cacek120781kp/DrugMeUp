@@ -11,15 +11,24 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class PlayerHandler implements Listener {
 
     Random gen = new Random();
     public final DrugMeUp plugin;
+    private DrugHandler dHandler;
+
+    private ArrayList<String> onDrugs = new ArrayList<>();
+    private ArrayList<String> isJump = new ArrayList<>();
+    private ArrayList<String> drunk = new ArrayList<>();
+    private ArrayList<String> heartattack = new ArrayList<>();
 
     public PlayerHandler(DrugMeUp plugin) {
         this.plugin = plugin;
+        this.dHandler = plugin.getDrugHandler();
     }
 
     public void doDrug(Player p, ItemStack drug) {
@@ -28,10 +37,10 @@ public class PlayerHandler implements Listener {
         } else {
             p.getInventory().removeItem(drug);
         }
-        doMessage(p, plugin.getDrug(drug));
-        doEffects(p, plugin.getDrug(drug));
-        doSmoke(p, plugin.getDrug(drug));
-        doNegatives(p, plugin.getDrug(drug));
+        doMessage(p, dHandler.getDrug(drug));
+        doEffects(p, dHandler.getDrug(drug));
+        doSmoke(p, dHandler.getDrug(drug));
+        doNegatives(p, dHandler.getDrug(drug));
     }
 
     private void doMessage(Player p, Drug drug) {
@@ -108,7 +117,7 @@ public class PlayerHandler implements Listener {
     }
 
     public void applyEffect(Player p, int i) {
-        plugin.getOnDrugs().add(p.getName());
+        onDrugs.add(p.getName());
 
         /* All potion effects here:
          http://www.minecraftwiki.net/wiki/Status_effect */
@@ -264,7 +273,7 @@ public class PlayerHandler implements Listener {
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
                 new Runnable() {
                     public void run() {
-                        plugin.getOnDrugs().remove(p.getName());
+                        onDrugs.remove(p.getName());
                         p.setFoodLevel(currFood / 2);
                     }
                 }, time);
@@ -276,8 +285,8 @@ public class PlayerHandler implements Listener {
         int maxTime = plugin.config.getInt("Effects.HighJump.MaxTime") * 20;
         int minTime = plugin.config.getInt("Effects.HighJump.MinTime") * 20;
 
-        plugin.getOnDrugs().add(p.getName());
-        plugin.getIsJump().add(p.getName());
+        onDrugs.add(p.getName());
+        isJump.add(p.getName());
 
         int power = filterInt(gen.nextInt(maxPower), minPower);
         int time = filterInt(gen.nextInt(maxTime), minTime);
@@ -457,7 +466,7 @@ public class PlayerHandler implements Listener {
         int maxTime = plugin.config.getInt("Effects.Drunk.MaxTime") * 20;
         int minTime = plugin.config.getInt("Effects.Drunk.MinTime") * 20;
 
-        plugin.getDrunk().add(p.getName());
+        drunk.add(p.getName());
 
         int time = filterInt(gen.nextInt(maxTime), minTime);
 
@@ -466,7 +475,7 @@ public class PlayerHandler implements Listener {
                     public void run() {
                         p.sendMessage(plugin.colorize(plugin.config
                                 .getString("Chat.Self.Sober")));
-                        plugin.getDrunk().remove(p.getName());
+                        drunk.remove(p.getName());
                     }
                 }, time);
     }
@@ -575,13 +584,13 @@ public class PlayerHandler implements Listener {
             heartAttack = heartAttack.replaceAll("%playername%", p.getName());
             Bukkit.broadcastMessage(plugin.colorize(heartAttack));
         }
-        plugin.getHeartAttack().add(p.getName());
+        heartattack.add(p.getName());
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
                 new Runnable() {
                     @Override
                     public void run() {
-                        plugin.getHeartAttack().remove(p.getName());
+                        heartattack.remove(p.getName());
                     }
                 }, 100);
         if (p.getHealth() < 2) {
@@ -591,7 +600,7 @@ public class PlayerHandler implements Listener {
                 new Runnable() {
                     @Override
                     public void run() {
-                        if (plugin.getHeartAttack().contains(p.getName())) {
+                        if (heartattack.contains(p.getName())) {
                             if (p.getHealth() < 2) {
                                 p.setHealth(2);
                             } else {
@@ -626,11 +635,31 @@ public class PlayerHandler implements Listener {
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
                 new Runnable() {
                     public void run() {
-                        plugin.getOnDrugs().remove(p.getName());
+                        onDrugs.remove(p.getName());
                         if (jump) {
-                            plugin.getIsJump().remove(p.getName());
+                            isJump.remove(p.getName());
                         }
                     }
                 }, time);
+    }
+
+    /* Get everyone who has scrambled text */
+    public List<String> getDrunk() {
+        return this.drunk;
+    }
+
+    /* Get everyone who is on drugs */
+    public List<String> getOnDrugs() {
+        return this.onDrugs;
+    }
+
+    /* Get everyone who is having a heart attack */
+    public List<String> getHeartAttack() {
+        return this.heartattack;
+    }
+
+    /* Get everyone who has drug-induced jump boost */
+    public List<String> getIsJump() {
+        return this.isJump;
     }
 }

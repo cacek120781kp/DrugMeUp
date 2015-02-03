@@ -17,22 +17,29 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @SuppressWarnings("UnusedDeclaration")
 public class EventsHandler implements Listener {
 
-    final DrugMeUp plugin;
-    final PlayerHandler pHandler;
+    private final DrugMeUp plugin;
+    private final ConfigHandler cHandler;
+    private final PlayerHandler pHandler;
+    private final DrugHandler dHandler;
+    private ArrayList<String> noplace = new ArrayList<>();
 
-    public EventsHandler(DrugMeUp plugin, PlayerHandler pHandler) {
+    public EventsHandler(DrugMeUp plugin) {
         this.plugin = plugin;
-        this.pHandler = pHandler;
+        this.cHandler = plugin.getConfigHandler();
+        this.pHandler = plugin.getPlayerHandler();
+        this.dHandler = plugin.getDrugHandler();
     }
 
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
         Player p = event.getPlayer();
-        if (plugin.getNoPlace().contains(p.getName())) {
+        if (noplace.contains(p.getName())) {
             event.setCancelled(true);
         }
     }
@@ -41,20 +48,20 @@ public class EventsHandler implements Listener {
     @EventHandler
     public void playerDeath(PlayerDeathEvent e) {
         Player p = e.getEntity();
-        if (plugin.getDrunk().contains(p.getName())) {
-            plugin.getDrunk().remove(p.getName());
+        if (pHandler.getDrunk().contains(p.getName())) {
+            pHandler.getDrunk().remove(p.getName());
         }
-        if (plugin.getOnDrugs().contains(p.getName())) {
-            plugin.getOnDrugs().remove(p.getName());
+        if (pHandler.getOnDrugs().contains(p.getName())) {
+            pHandler.getOnDrugs().remove(p.getName());
         }
-        if (plugin.getHeartAttack().contains(p.getName())) {
-            plugin.getHeartAttack().remove(p.getName());
+        if (pHandler.getHeartAttack().contains(p.getName())) {
+            pHandler.getHeartAttack().remove(p.getName());
         }
-        if (plugin.getIsJump().contains(p.getName())) {
-            plugin.getIsJump().remove(p.getName());
+        if (pHandler.getIsJump().contains(p.getName())) {
+            pHandler.getIsJump().remove(p.getName());
         }
-        if (plugin.getNoPlace().contains(p.getName())) {
-            plugin.getNoPlace().remove(p.getName());
+        if (noplace.contains(p.getName())) {
+            noplace.remove(p.getName());
         }
     }
 
@@ -63,12 +70,12 @@ public class EventsHandler implements Listener {
         Player player = e.getPlayer();
         ItemStack item = player.getItemInHand();
         if (item != null) {
-            if (plugin.isDrug(player.getItemInHand())) {
+            if (dHandler.isDrug(player.getItemInHand())) {
                 if (player.hasPermission("drugs.use")) {
-                    if (!plugin.isMultiworld() || plugin.getWorlds().contains(player.getWorld())) {
+                    if (!cHandler.isMultiworld() || cHandler.getWorlds().contains(player.getWorld())) {
                         if (e.getAction().equals(Action.RIGHT_CLICK_AIR) || e.getAction().equals(Action
                                 .RIGHT_CLICK_BLOCK)) {
-                            Drug drug = plugin.getDrug(item);
+                            Drug drug = dHandler.getDrug(item);
                             if (drug.isSneak()) {
                                 if (!player.isSneaking()) {
                                     return;
@@ -89,7 +96,7 @@ public class EventsHandler implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityDamage(EntityDamageEvent e) {
         if (e.getEntity() instanceof Player) {
-            if (plugin.getIsJump().contains((e.getEntity()).getName())) {
+            if (pHandler.getIsJump().contains((e.getEntity()).getName())) {
                 if (e.getCause().equals(EntityDamageEvent.DamageCause.FALL)) {
                     if (plugin.config.getBoolean("Options.EnableJumpProtection")) {
                         e.setCancelled(true);
@@ -101,7 +108,7 @@ public class EventsHandler implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerChat(AsyncPlayerChatEvent e) {
-        if (plugin.getDrunk().contains(e.getPlayer().getName())) {
+        if (pHandler.getDrunk().contains(e.getPlayer().getName())) {
             String initial = e.getMessage();
             String end = pHandler.scramble(initial);
             e.setMessage(end);
@@ -110,7 +117,7 @@ public class EventsHandler implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent e) throws IOException {
-        if (plugin.isUpdateCheck() && !plugin.isUpdateDownload()) {
+        if (cHandler.isUpdateCheck() && !cHandler.isUpdateDownload()) {
             if (e.getPlayer().hasPermission("drugs.updates")
                     || e.getPlayer().isOp()) {
                 String[] updateNotif = new String[4];
@@ -122,7 +129,7 @@ public class EventsHandler implements Listener {
                     e.getPlayer().sendMessage(ChatColor.RED + s);
                 }
             }
-        } else if (plugin.isUpdateDownload()) {
+        } else if (cHandler.isUpdateDownload()) {
             if (e.getPlayer().hasPermission("drugs.updates") || e.getPlayer().isOp()) {
                 String[] updateNotif = new String[5];
                 updateNotif[0] = " *";
@@ -141,18 +148,23 @@ public class EventsHandler implements Listener {
     public void onPlayerItemConsume(final PlayerItemConsumeEvent e) {
         Player p = e.getPlayer();
         ItemStack i = e.getItem();
-        if (plugin.isDrug(i) && i.getType() == Material.MILK_BUCKET) {
+        if (dHandler.isDrug(i) && i.getType() == Material.MILK_BUCKET) {
             ItemStack milk = new ItemStack(Material.MILK_BUCKET, 1);
             p.getInventory().removeItem(milk);
             e.setCancelled(true);
         }
-        if (plugin.isDrug(i)) {
-            Drug drug = plugin.getDrug(i);
+        if (dHandler.isDrug(i)) {
+            Drug drug = dHandler.getDrug(i);
             if (drug.isSneak() && !p.isSneaking()) {
                 return;
             }
             pHandler.doDrug(p, i);
         }
+    }
+
+    /* Get everyone who can't place blocks */
+    public List<String> getNoPlace() {
+        return noplace;
     }
 
 }
