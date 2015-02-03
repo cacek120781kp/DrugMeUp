@@ -65,6 +65,16 @@ public class DrugHandler {
     }
 
     /**
+     * Get the drug's name
+     *
+     * @param drug The drug
+     * @return The drugs name
+     */
+    public String getDrugName(Drug drug) {
+        return drug.getName();
+    }
+
+    /**
      * Get the list of Drugs
      *
      * @return A collection of Drugs
