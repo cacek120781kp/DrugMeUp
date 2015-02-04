@@ -2,9 +2,7 @@ package me.giinger.dmu;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Effect;
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
@@ -107,16 +105,16 @@ public class PlayerHandler implements Listener {
             if (random <= negChance) {
                 switch (currentNeg) {
                     case 1:
-                        doPuke(p);
+                        doPuke(p, drug);
                         break;
                     case 2:
-                        doBurning(p);
+                        doBurning(p, drug);
                         break;
                     case 3:
-                        doHeartAttack(p);
+                        doHeartAttack(p, drug);
                         break;
                     case 4:
-                        doOverdose(p);
+                        doOverdose(p, drug);
                         break;
                 }
             }
@@ -489,111 +487,60 @@ public class PlayerHandler implements Listener {
     }
 
     @SuppressWarnings("deprecation")
-    public void doPuke(Player p) {
-        int itemi = p.getItemInHand().getTypeId();
-        short dura = p.getItemInHand().getDurability();
-        String puke;
-
+    public void doPuke(Player p, Drug drug) {
+        String puke = plugin.config.getString("Chat.Broadcast.Puke")
+                .replaceAll("%drugname%", drug.getName()).replaceAll("%playername%", p.getName());
         if (plugin.config.getBoolean("Options.EnableBroadcastMessages")) {
-            if (dura == 0) {
-                puke = plugin.config.getString("Chat.Broadcast.Puke")
-                        .replaceAll(
-                                "%drugname%",
-                                plugin.config.getString("DrugIds." + itemi
-                                        + ".DrugName"));
-            } else {
-                puke = plugin.config.getString("Chat.Broadcast.Puke")
-                        .replaceAll(
-                                "%drugname%",
-                                plugin.config.getString("DrugIds." + itemi
-                                        + ":" + dura + ".DrugName"));
-            }
-            puke = puke.replaceAll("%playername%", p.getName());
             Bukkit.broadcastMessage(plugin.colorize(puke));
+        } else {
+            p.sendMessage(plugin.colorize(puke));
         }
         ItemStack[] inventory = p.getInventory().getContents();
-        Location l = p.getLocation().getBlock().getRelative(BlockFace.NORTH, 3)
-                .getLocation();
         p.getInventory().clear();
         for (ItemStack item : inventory) {
             if (item != null) {
-                p.getWorld().dropItemNaturally(l, item);
-                p.updateInventory();
+                p.getWorld().dropItemNaturally(p.getLocation(), item);
             }
         }
         p.updateInventory();
     }
 
-    public void doBurning(Player p) {
+    public void doBurning(Player p, Drug drug) {
         Material itemi = p.getItemInHand().getType();
         short dura = p.getItemInHand().getDurability();
-        String hot;
 
+
+        String hot = plugin.config.getString("Chat.Broadcast.Burning")
+                .replaceAll("%drugname%", drug.getName()).replaceAll("%playername%", p.getName());
         if (plugin.config.getBoolean("Options.EnableBroadcastMessages")) {
-            if (dura == 0) {
-                hot = plugin.config.getString("Chat.Broadcast.Burning")
-                        .replaceAll(
-                                "%drugname%",
-                                plugin.config.getString("DrugIds." + itemi
-                                        + ".DrugName"));
-            } else {
-                hot = plugin.config.getString("Chat.Broadcast.Burning")
-                        .replaceAll(
-                                "%drugname%",
-                                plugin.config.getString("DrugIds." + itemi
-                                        + ":" + dura + ".DrugName"));
-            }
-            hot = hot.replaceAll("%playername%", p.getName());
             Bukkit.broadcastMessage(plugin.colorize(hot));
+        } else {
+            p.sendMessage(plugin.colorize(hot));
         }
         p.setFireTicks(200);
     }
 
-    public void doOverdose(Player p) {
-        Material itemi = p.getItemInHand().getType();
-        short dura = p.getItemInHand().getDurability();
-        String death;
-
+    public void doOverdose(Player p, Drug drug) {
+        String death = plugin.config.getString("Chat.Broadcast.Death").replaceAll("%drugname%",
+                plugin.config.getString(drug.getName())).replaceAll("%playername%", p.getName());
         if (plugin.config.getBoolean("Options.EnableBroadcastMessages")) {
-            if (dura == 0) {
-                death = plugin.config.getString("Chat.Broadcast.Death").replaceAll("%drugname%",
-                        plugin.config.getString("DrugIds." + itemi
-                                + ".DrugName"));
-            } else {
-                death = plugin.config.getString("Chat.Broadcast.Death").replaceAll("%drugname%",
-                        plugin.config.getString("DrugIds." + itemi
-                                + ":" + dura + ".DrugName"));
-            }
-            death = death.replaceAll("%playername%", p.getName());
             Bukkit.broadcastMessage(plugin.colorize(death));
+        } else {
+            p.sendMessage(plugin.colorize(death));
         }
         p.setHealth(0);
     }
 
-    public void doHeartAttack(final Player p) {
-        Material itemi = p.getItemInHand().getType();
-        short dura = p.getItemInHand().getDurability();
-        String heartAttack;
-
+    public void doHeartAttack(final Player p, Drug drug) {
+        String heartAttack = plugin.config.getString(
+                "Chat.Broadcast.HeartAttack").replaceAll(
+                "%drugname%", drug.getName()).replaceAll("%playername%", p.getName());
         if (plugin.config.getBoolean("Options.EnableBroadcastMessages")) {
-            if (dura == 0) {
-                heartAttack = plugin.config.getString(
-                        "Chat.Broadcast.HeartAttack").replaceAll(
-                        "%drugname%",
-                        plugin.config.getString("DrugIds." + itemi
-                                + ".DrugName"));
-            } else {
-                heartAttack = plugin.config.getString(
-                        "Chat.Broadcast.HeartAttack").replaceAll(
-                        "%drugname%",
-                        plugin.config.getString("DrugIds." + itemi + ":" + dura
-                                + ".DrugName"));
-            }
-            heartAttack = heartAttack.replaceAll("%playername%", p.getName());
             Bukkit.broadcastMessage(plugin.colorize(heartAttack));
+        } else {
+            p.sendMessage(plugin.colorize(heartAttack));
         }
         heartattack.add(p.getName());
-
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
                 new Runnable() {
                     @Override
