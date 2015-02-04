@@ -67,7 +67,7 @@ public class DrugHandler {
         }
         return null;
     }
-    
+
     /**
      * Get the list of Drugs
      *
@@ -121,19 +121,18 @@ public class DrugHandler {
             if (!drugProblem(key)) {
                 Material mat = Material.getMaterial(key.split(":")[0]);
                 short dmg = (key.split(":").length == 1) ? 0 : Short.parseShort(key.split(":")[1]);
-                ItemStack item = new ItemStack(mat, 1, dmg);
+                ItemStack item = new ItemStack(mat, 0, dmg);
                 String name = config.getString(path + "DrugName");
                 String message = (config.getString(path + "Message") != null) ? config.getString(path + "Message") : "";
+                String type = config.getString(path + "Type");
                 String[] effects = config.getString(path + "Effect").replaceAll(" ", "").split(",");
                 String[] negatives = config.getString(path + "Negatives").replaceAll(" ", "").split(",");
                 int negChance = (config.getInt(path + "NegChance") != 0) ? config.getInt(path + "NegChance") : 0;
-                boolean type = (config.getString(path + "Type") == null) || config.getString(path + "Type")
-                        .equalsIgnoreCase("All");
                 boolean smoke = config.getBoolean(path + "Smoke");
                 boolean negative = (negChance != 0);
                 boolean sneak = config.getBoolean(path + "MustSneak");
                 boolean edible = item.getType().isEdible() || item.getType().name().equalsIgnoreCase("POTION");
-                drugs.put(item, new Drug(item, name, message, effects, negatives, negChance, type, smoke, negative,
+                drugs.put(item, new Drug(item, name, message, type, effects, negatives, negChance, smoke, negative,
                         sneak, edible));
                 totalDrugs++;
             } else {

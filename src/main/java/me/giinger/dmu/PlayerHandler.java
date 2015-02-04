@@ -30,19 +30,21 @@ public class PlayerHandler implements Listener {
     }
 
     public void doDrug(Player p, Drug drug) {
-        doRemoveDrug(p, drug);
-        doMessage(p, drug);
-        doEffects(p, drug);
-        doSmoke(p, drug);
-        doNegatives(p, drug);
+        if (!drug.getType().equalsIgnoreCase("none")) {
+            doRemoveDrug(p);
+            doMessage(p, drug);
+            doEffects(p, drug);
+            doSmoke(p, drug);
+            doNegatives(p, drug);
+        }
     }
 
-    private void doRemoveDrug(Player p, Drug drug) {
-        ItemStack dItem = drug.getItemStack();
-        if (dItem.getAmount() > 1) {
-            dItem.setAmount(dItem.getAmount() - 1);
+    private void doRemoveDrug(Player p) {
+        ItemStack drug = p.getItemInHand();
+        if (drug.getAmount() > 1) {
+            drug.setAmount(drug.getAmount() - 1);
         } else {
-            p.getInventory().removeItem(dItem);
+            p.getInventory().removeItem(drug);
         }
     }
 
@@ -53,24 +55,27 @@ public class PlayerHandler implements Listener {
     }
 
     private void doEffects(Player p, Drug drug) {
-        if (drug.isType()) {
-            // All
-            for (int effect : drug.getEffects()) {
-                applyEffect(p, effect);
-            }
-        } else {
-            // Random
-            int totalEffects = drug.getEffects().size();
-            int random = gen.nextInt(totalEffects);
+        switch (drug.getType().toLowerCase()) {
+            case "all":
+                // All
+                for (int effect : drug.getEffects()) {
+                    applyEffect(p, effect);
+                }
+                break;
+            case "random":
+                // Random
+                int totalEffects = drug.getEffects().size();
+                int random = gen.nextInt(totalEffects);
 
-            if (random < 0) {
-                random = 0;
-            }
-            if (random > totalEffects) {
-                random = totalEffects;
-            }
-            int x = drug.getEffects().get(random);
-            applyEffect(p, x);
+                if (random < 0) {
+                    random = 0;
+                }
+                if (random > totalEffects) {
+                    random = totalEffects;
+                }
+                int x = drug.getEffects().get(random);
+                applyEffect(p, x);
+                break;
         }
     }
 
