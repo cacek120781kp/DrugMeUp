@@ -34,22 +34,29 @@ public class Drug {
         this.edible = edible;
     }
 
+    /**
+     * Get the configured drug's name
+     *
+     * @return The name of the drug
+     */
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
+    /**
+     * Get the configured drug's message
+     *
+     * @return The message for the drug
+     */
     public String getMessage() {
         return message;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
+    /**
+     * Get all effects associated with the drug
+     *
+     * @return A collection of effects associated with the drug
+     */
     public ArrayList<Integer> getEffects() {
         ArrayList<Integer> effects = new ArrayList<>();
         for (String s : this.effects) {
@@ -58,6 +65,11 @@ public class Drug {
         return effects;
     }
 
+    /**
+     * Get all negatives associated with the drug
+     *
+     * @return A collection of negatives associated with the drug
+     */
     public ArrayList<Integer> getNegatives() {
         ArrayList<Integer> negatives = new ArrayList<>();
         for (String s : this.negatives) {
@@ -66,59 +78,66 @@ public class Drug {
         return negatives;
     }
 
+    /**
+     * Get the chance for a negative effect to happen
+     *
+     * @return The negative effect chance
+     */
     public int getNegativeChance() {
         return negativeChance;
     }
 
-    public void setNegativeChance(int negativeChance) {
-        this.negativeChance = negativeChance;
-    }
-
+    /**
+     * Get the effect application type (all/random)
+     *
+     * @return true = all; false = random;
+     */
     public boolean isType() {
         return type;
     }
 
-    public void setType(boolean type) {
-        this.type = type;
-    }
-
+    /**
+     * Get whether the drug is smoked
+     *
+     * @return If the drug is smoked
+     */
     public boolean isSmoke() {
         return smoke;
     }
 
-    public void setSmoke(boolean smoke) {
-        this.smoke = smoke;
-    }
-
+    /**
+     * Get whether the drug has negatives
+     *
+     * @return If the drug has negatives
+     */
     public boolean isNegative() {
         return negative;
     }
 
-    public void setNegative(boolean negative) {
-        this.negative = negative;
-    }
-
+    /**
+     * Get whether you need to crouch for the drug
+     *
+     * @return If the drug requires you to sneak
+     */
     public boolean isSneak() {
         return sneak;
     }
 
-    public void setSneak(boolean sneak) {
-        this.sneak = sneak;
-    }
-
+    /**
+     * Get whether the drug is edible
+     *
+     * @return If the drug is edible
+     */
     public boolean isEdible() {
         return edible;
     }
 
-    public void setEdible(boolean edible) {
-        this.edible = edible;
-    }
-
+    /**
+     * Get the ItemStack associated with the drug
+     *
+     * @return The ItemStack associated with the drug
+     */
     public ItemStack getItemStack() {
         return itemStack;
-    }
-
-    public void setItemStack(ItemStack itemStack) {
-        this.itemStack = itemStack;
     }
 }
