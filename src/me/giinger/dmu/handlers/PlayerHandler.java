@@ -1,8 +1,11 @@
-package me.giinger.dmu;
+package me.giinger.dmu.handlers;
 
+import me.giinger.dmu.Drug;
+import me.giinger.dmu.DrugMeUp;
+import me.giinger.dmu.events.DrugTakenEvent;
+import me.giinger.dmu.events.PreDrugTakenEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Effect;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
@@ -29,11 +32,20 @@ public class PlayerHandler implements Listener {
 
     public void doDrug(Player p, Drug drug) {
         if (!drug.getType().equalsIgnoreCase("none")) {
-            doRemoveDrug(p);
-            doMessage(p, drug);
-            doEffects(p, drug);
-            doSmoke(p, drug);
-            doNegatives(p, drug);
+            // Call PreDrugTakenEvent and set variables in case they were changed
+            PreDrugTakenEvent preDrugTakenEvent = new PreDrugTakenEvent(p, drug);
+            Bukkit.getServer().getPluginManager().callEvent(preDrugTakenEvent);
+            drug = preDrugTakenEvent.getDrug();
+            p = preDrugTakenEvent.getPlayer();
+            // Make sure it's not cancelled
+            if (!preDrugTakenEvent.isCancelled()) {
+                doRemoveDrug(p);
+                doMessage(p, drug);
+                doSmoke(p, drug);
+                // Call DrugTakenEvent
+                Bukkit.getServer().getPluginManager().callEvent(new DrugTakenEvent(p, drug, doNegatives(p, drug),
+                        doEffects(p, drug)));
+            }
         }
     }
 
@@ -52,11 +64,13 @@ public class PlayerHandler implements Listener {
                 .replaceAll("%drugname%", drug.getName())));
     }
 
-    private void doEffects(Player p, Drug drug) {
+    private ArrayList<Integer> doEffects(Player p, Drug drug) {
+        ArrayList<Integer> effectsGiven = new ArrayList<>();
         switch (drug.getType().toLowerCase()) {
             case "all":
                 // All
                 for (int effect : drug.getEffects()) {
+                    effectsGiven.add(effect);
                     applyEffect(p, effect);
                 }
                 break;
@@ -72,9 +86,11 @@ public class PlayerHandler implements Listener {
                     random = totalEffects;
                 }
                 int x = drug.getEffects().get(random);
+                effectsGiven.add(x);
                 applyEffect(p, x);
                 break;
         }
+        return effectsGiven;
     }
 
     public void doSmoke(Player p, Drug drug) {
@@ -86,7 +102,7 @@ public class PlayerHandler implements Listener {
         }
     }
 
-    public void doNegatives(Player p, Drug drug) {
+    public boolean doNegatives(Player p, Drug drug) {
         if (drug.isNegative()) {
             Random ran = new Random();
             int negChance = drug.getNegativeChance();
@@ -106,20 +122,20 @@ public class PlayerHandler implements Listener {
                 switch (currentNeg) {
                     case 1:
                         doPuke(p, drug);
-                        break;
+                        return true;
                     case 2:
                         doBurning(p, drug);
-                        break;
+                        return true;
                     case 3:
                         doHeartAttack(p, drug);
-                        break;
+                        return true;
                     case 4:
                         doOverdose(p, drug);
-                        break;
+                        return true;
                 }
             }
         }
-
+        return false;
     }
 
     public void applyEffect(Player p, int i) {
@@ -506,10 +522,6 @@ public class PlayerHandler implements Listener {
     }
 
     public void doBurning(Player p, Drug drug) {
-        Material itemi = p.getItemInHand().getType();
-        short dura = p.getItemInHand().getDurability();
-
-
         String hot = plugin.config.getString("Chat.Broadcast.Burning")
                 .replaceAll("%drugname%", drug.getName()).replaceAll("%playername%", p.getName());
         if (plugin.config.getBoolean("Options.EnableBroadcastMessages")) {

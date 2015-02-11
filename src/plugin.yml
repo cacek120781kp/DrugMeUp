@@ -1,12 +1,12 @@
 name: DrugMeUp
 main: me.giinger.dmu.DrugMeUp
-version: 0.9.4.1
+version: 1.0
 author: Giinger, hammale
 commands:
   drugmeup:
-    description:
+    aliases: [dmu, drug]
+    description: Take drugs in minecraft
     usage: "Incorrect usage. '/drugmeup [cleardrugs/reload]'"
-    
 permissions:
     drugs.*:
         description: Gives access to all DrugMeUp features

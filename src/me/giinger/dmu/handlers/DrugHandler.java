@@ -1,5 +1,7 @@
-package me.giinger.dmu;
+package me.giinger.dmu.handlers;
 
+import me.giinger.dmu.Drug;
+import me.giinger.dmu.DrugMeUp;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
@@ -13,7 +15,7 @@ public class DrugHandler {
     private HashMap<ItemStack, Drug> drugs = new HashMap<>();
     private FileConfiguration config;
 
-    DrugHandler(DrugMeUp plugin) {
+    public DrugHandler(DrugMeUp plugin) {
         this.plugin = plugin;
         this.config = plugin.config;
     }
@@ -114,7 +116,7 @@ public class DrugHandler {
     /**
      * Gather a collection full of Drugs
      */
-    int gatherDrugs() {
+    public int gatherDrugs() {
         int totalDrugs = 0;
         for (String key : config.getConfigurationSection("DrugIds").getKeys(false)) {
             String path = "DrugIds." + key + ".";
@@ -157,7 +159,7 @@ public class DrugHandler {
     /**
      * Clear the collection of drugs
      */
-    void clearDrugs() {
+    public void clearDrugs() {
         drugs.clear();
     }
 }

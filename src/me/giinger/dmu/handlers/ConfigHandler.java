@@ -1,5 +1,7 @@
-package me.giinger.dmu;
+package me.giinger.dmu.handlers;
 
+import me.giinger.dmu.DrugMeUp;
+import me.giinger.dmu.Updater;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -24,7 +26,7 @@ public class ConfigHandler {
     private boolean hasCheckedUpdate = false;
     private boolean hasDownloadedUpdate = false;
 
-    ConfigHandler(DrugMeUp plugin) {
+    public ConfigHandler(DrugMeUp plugin) {
         this.plugin = plugin;
         this.config = plugin.config;
         this.updater = new Updater(plugin, 35506, plugin.file, Updater.UpdateType.NO_DOWNLOAD, true);
@@ -33,7 +35,7 @@ public class ConfigHandler {
     /**
      * Generate a list of all current Materials in MineCraft
      */
-    void createMaterialList() {
+    public void createMaterialList() {
         try {
             if (!matList.exists()) {
                 matList.createNewFile();
@@ -58,7 +60,7 @@ public class ConfigHandler {
      *
      * @return If update was needed / successful
      */
-    boolean configUpdate() {
+    public boolean configUpdate() {
         try {
             File file = new File(plugin.getDataFolder(), "config.yml");
             BufferedReader br = new BufferedReader(new FileReader(file));
@@ -116,7 +118,7 @@ public class ConfigHandler {
      *
      * @return If there's a checkable update
      */
-    boolean isUpdateCheck() {
+    public boolean isUpdateCheck() {
         if (config.getBoolean("Options.AutoUpdateDownload")) {
             isUpdateDownload();
             return true;
@@ -145,7 +147,7 @@ public class ConfigHandler {
      *
      * @return If there's a downloadable update
      */
-    boolean isUpdateDownload() {
+    public boolean isUpdateDownload() {
         if (config.getBoolean("Options.AutoUpdateDownload")) {
             if (!updater.getLatestName().equalsIgnoreCase("drugmeup v" + plugin.getDescription().getVersion())) {
                 if (!hasDownloadedUpdate) {
@@ -177,7 +179,7 @@ public class ConfigHandler {
     /**
      * Gather the worlds the plugin is using
      */
-    void gatherWorlds() {
+    public void gatherWorlds() {
         String[] inConfig = config.getString("Options.Worlds").split(",");
         for (String s : inConfig) {
             worlds.add(Bukkit.getWorld(s));
@@ -187,7 +189,7 @@ public class ConfigHandler {
     /**
      * Clear world collection
      */
-    void clearWorlds() {
+    public void clearWorlds() {
         worlds.clear();
     }
 }

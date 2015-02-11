@@ -1,5 +1,7 @@
-package me.giinger.dmu;
+package me.giinger.dmu.handlers;
 
+import me.giinger.dmu.Drug;
+import me.giinger.dmu.DrugMeUp;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -27,9 +29,9 @@ public class EventsHandler implements Listener {
 
     public EventsHandler(DrugMeUp plugin) {
         this.plugin = plugin;
-        this.cHandler = plugin.getConfigHandler();
-        this.pHandler = plugin.getPlayerHandler();
-        this.dHandler = plugin.getDrugHandler();
+        this.cHandler = DrugMeUp.getConfigHandler();
+        this.pHandler = DrugMeUp.getPlayerHandler();
+        this.dHandler = DrugMeUp.getDrugHandler();
     }
 
     @EventHandler
@@ -39,7 +41,6 @@ public class EventsHandler implements Listener {
             event.setCancelled(true);
         }
     }
-
 
     @EventHandler
     public void playerDeath(PlayerDeathEvent e) {
@@ -66,7 +67,7 @@ public class EventsHandler implements Listener {
         Player player = e.getPlayer();
         ItemStack item = player.getItemInHand();
         if (item != null) {
-            if (dHandler.isDrug(player.getItemInHand())) {
+            if (dHandler.isDrug(item)) {
                 if (player.hasPermission("drugs.use")) {
                     if (!cHandler.isMultiworld() || cHandler.getWorlds().contains(player.getWorld())) {
                         if (e.getAction().equals(Action.RIGHT_CLICK_AIR) || e.getAction().equals(Action
@@ -81,6 +82,7 @@ public class EventsHandler implements Listener {
                                 // Return because edibles are handled by PlayerItemConsumeEvent
                                 return;
                             }
+
                             pHandler.doDrug(player, dHandler.getDrug(item));
                         }
                     }
@@ -141,7 +143,7 @@ public class EventsHandler implements Listener {
     }
 
     @EventHandler
-    public void onPlayerItemConsume(final PlayerItemConsumeEvent e) {
+    public void onPlayerItemConsume(PlayerItemConsumeEvent e) {
         Player p = e.getPlayer();
         ItemStack i = e.getItem();
         if (dHandler.isDrug(i) && i.getType() == Material.MILK_BUCKET) {

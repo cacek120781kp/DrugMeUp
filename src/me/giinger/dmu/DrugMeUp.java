@@ -1,5 +1,10 @@
 package me.giinger.dmu;
 
+import me.giinger.dmu.events.DMUConfigReloadEvent;
+import me.giinger.dmu.handlers.ConfigHandler;
+import me.giinger.dmu.handlers.DrugHandler;
+import me.giinger.dmu.handlers.EventsHandler;
+import me.giinger.dmu.handlers.PlayerHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -7,7 +12,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.potion.PotionEffect;
 
 import java.io.File;
 import java.util.logging.Logger;
@@ -18,9 +22,9 @@ public class DrugMeUp extends JavaPlugin {
     public Logger log = getLogger();
     public File file = getFile();
 
-    private ConfigHandler cHandler;
-    private DrugHandler dHandler;
-    private PlayerHandler pHandler;
+    private static ConfigHandler cHandler;
+    private static DrugHandler dHandler;
+    private static PlayerHandler pHandler;
 
     public void onDisable() {
         log.info("Disabled!");
@@ -63,38 +67,36 @@ public class DrugMeUp extends JavaPlugin {
                         config = getConfig();
                         dHandler.clearDrugs();
                         cHandler.clearWorlds();
-                        dHandler.gatherDrugs();
+                        dHandler = new DrugHandler(this);
+                        pHandler = new PlayerHandler(this);
+                        cHandler = new ConfigHandler(this);
                         if (cHandler.isMultiworld()) {
                             cHandler.gatherWorlds();
                         }
-                        sender.sendMessage(ChatColor.GREEN
-                                + "[DrugMeUp] Reloaded!");
+                        log.info("Reloaded!");
+                        sender.sendMessage(ChatColor.GREEN + "[DrugMeUp] Reloaded!");
+                        log.info(dHandler.gatherDrugs() + " Drugs Loaded!");
+                        Bukkit.getServer().getPluginManager().callEvent(new DMUConfigReloadEvent());
                         return true;
                     }
                 }
             } else if (args.length == 2) {
-                if (args[0].equalsIgnoreCase("cleardrugs")) {
+                if (args[0].equalsIgnoreCase("cleardrugs") ||
+                        args[0].equalsIgnoreCase("cd") ||
+                        args[0].equalsIgnoreCase("clear")) {
                     if (sender.hasPermission("drugs.cleardrugs")) {
                         Player p = getPlayer(args[1]);
                         if (p == null) {
-                            if (sender instanceof Player) {
-                                sender.sendMessage(ChatColor.RED + "[DrugMeUp] '" + args[1] + "' is not online.");
-                            } else {
-                                sender.sendMessage("[DrugMeUp] '" + args[1] + "' is not online.");
-                            }
+                            sender.sendMessage(ChatColor.RED + "[DrugMeUp] '" + args[1] + "' is not online.");
                             return true;
                         } else {
-                            for (PotionEffect pe : p.getActivePotionEffects()) {
-                                p.removePotionEffect(pe.getType());
-                            }
-                            p.sendMessage(ChatColor.GREEN
-                                    + "[DrugMeUp] All of your drug effects have been cleared!");
-                            if (sender instanceof Player) {
-                                sender.sendMessage(ChatColor.GREEN + "[DrugMeUp] Cleared drug effects from '"
-                                        + p.getName() + "'.");
-                            } else {
-                                sender.sendMessage("[DrugMeUp] Cleared drug effects from '" + p.getName() + "'.");
-                            }
+//                            for (PotionEffect pe : p.getActivePotionEffects()) {
+//                                p.removePotionEffect(pe.getType());
+//                            }
+                            p.getActivePotionEffects().clear();
+                            p.sendMessage(ChatColor.GREEN + "[DrugMeUp] All of your drug effects have been cleared!");
+                            sender.sendMessage(ChatColor.GREEN + "[DrugMeUp] Cleared drug effects from '" + p.getName
+                                    () + "'.");
                             return true;
                         }
                     } else {
@@ -125,15 +127,15 @@ public class DrugMeUp extends JavaPlugin {
         return null;
     }
 
-    public ConfigHandler getConfigHandler() {
+    public static ConfigHandler getConfigHandler() {
         return cHandler;
     }
 
-    public DrugHandler getDrugHandler() {
+    public static DrugHandler getDrugHandler() {
         return dHandler;
     }
 
-    public PlayerHandler getPlayerHandler() {
+    public static PlayerHandler getPlayerHandler() {
         return pHandler;
     }
 }
