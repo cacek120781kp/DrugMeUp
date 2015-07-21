@@ -12,6 +12,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
 
 import java.io.File;
 import java.util.logging.Logger;
@@ -59,7 +60,7 @@ public class DrugMeUp extends JavaPlugin {
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
-        if (cmd.getName().equalsIgnoreCase("drugmeup")) {
+        if (cmd.getName().equalsIgnoreCase("drugmeup") || cmd.getName().equalsIgnoreCase("dmu")) {
             if (args.length == 1) {
                 if (args[0].equalsIgnoreCase("reload")) {
                     if (sender.hasPermission("drugs.reload")) {
@@ -70,9 +71,8 @@ public class DrugMeUp extends JavaPlugin {
                         dHandler = new DrugHandler(this);
                         pHandler = new PlayerHandler(this);
                         cHandler = new ConfigHandler(this);
-                        if (cHandler.isMultiworld()) {
+                        if (cHandler.isMultiworld())
                             cHandler.gatherWorlds();
-                        }
                         log.info("Reloaded!");
                         sender.sendMessage(ChatColor.GREEN + "[DrugMeUp] Reloaded!");
                         log.info(dHandler.gatherDrugs() + " Drugs Loaded!");
@@ -90,10 +90,9 @@ public class DrugMeUp extends JavaPlugin {
                             sender.sendMessage(ChatColor.RED + "[DrugMeUp] '" + args[1] + "' is not online.");
                             return true;
                         } else {
-//                            for (PotionEffect pe : p.getActivePotionEffects()) {
-//                                p.removePotionEffect(pe.getType());
-//                            }
-                            p.getActivePotionEffects().clear();
+                            for (PotionEffect potionEffect : p.getActivePotionEffects()) {
+                                p.removePotionEffect(potionEffect.getType());
+                            }
                             p.sendMessage(ChatColor.GREEN + "[DrugMeUp] All of your drug effects have been cleared!");
                             sender.sendMessage(ChatColor.GREEN + "[DrugMeUp] Cleared drug effects from '" + p.getName
                                     () + "'.");

@@ -8,7 +8,10 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
+@SuppressWarnings("ALL")
 public class DrugHandler {
 
     private DrugMeUp plugin;
@@ -43,7 +46,6 @@ public class DrugHandler {
      * @param mat The Material
      * @return The Drug instance
      */
-
     public Drug getDrug(Material mat, short dmg) {
         for (Drug drug : getDrugs()) {
             Material drugMat = drug.getItemStack().getType();
@@ -118,8 +120,8 @@ public class DrugHandler {
      */
     public int gatherDrugs() {
         int totalDrugs = 0;
-        for (String key : config.getConfigurationSection("DrugIds").getKeys(false)) {
-            String path = "DrugIds." + key + ".";
+        for (String key : config.getConfigurationSection("Drugs").getKeys(false)) {
+            String path = "Drugs." + key + ".";
             if (!drugProblem(key)) {
                 Material mat = Material.getMaterial(key.split(":")[0]);
                 short dmg = (key.split(":").length == 1) ? 0 : Short.parseShort(key.split(":")[1]);
@@ -127,15 +129,28 @@ public class DrugHandler {
                 String name = config.getString(path + "DrugName");
                 String message = (config.getString(path + "Message") != null) ? config.getString(path + "Message") : "";
                 String type = config.getString(path + "Type");
-                String[] effects = config.getString(path + "Effect").replaceAll(" ", "").split(",");
-                String[] negatives = config.getString(path + "Negatives").replaceAll(" ", "").split(",");
+                // Load particles
+                Set<String> particles = (config.getConfigurationSection(path + "Particles") != null) ? config
+                        .getConfigurationSection(path + "Particles").getKeys(false) : new HashSet<>();
+                // Load effects
+                String[] sEffects = config.getString(path + "Effect").replaceAll(" ", "").split(",");
+                Integer[] effects = new Integer[sEffects.length];
+                for (int i = 0; i < sEffects.length; i++) {
+                    effects[i] = Integer.parseInt(sEffects[i]);
+                }
+                // Load negatives
+                String[] sNegatives = config.getString(path + "Negatives").replaceAll(" ", "").split(",");
+                Integer[] negatives = new Integer[sNegatives.length];
+                for (int i = 0; i < sNegatives.length; i++) {
+                    negatives[i] = Integer.parseInt(sNegatives[i]);
+                }
                 int negChance = (config.getInt(path + "NegChance") != 0) ? config.getInt(path + "NegChance") : 0;
                 boolean smoke = config.getBoolean(path + "Smoke");
                 boolean negative = (negChance != 0);
                 boolean sneak = config.getBoolean(path + "MustSneak");
                 boolean edible = item.getType().isEdible() || item.getType().name().equalsIgnoreCase("POTION");
-                drugs.put(item, new Drug(item, name, message, type, effects, negatives, negChance, smoke, negative,
-                        sneak, edible));
+                drugs.put(item, new Drug(item, name, message, type, particles, effects, negatives, negChance,
+                        negative, sneak, edible));
                 totalDrugs++;
             } else {
                 plugin.log.info("Problem loading drug '" + key + "'!");
@@ -151,7 +166,7 @@ public class DrugHandler {
      * @return If there's a problem with any of the drug's vars
      */
     private boolean drugProblem(String key) {
-        String path = "DrugIds." + key + ".";
+        String path = "Drugs." + key + ".";
         return config.getString(path + "DrugName") == null || config.getString(path + "Effect") == null ||
                 config.getString(path + "Negatives") == null || config.getString(path + "Type") == null;
     }

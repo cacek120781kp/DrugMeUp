@@ -2,7 +2,9 @@ package me.giinger.dmu;
 
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 @SuppressWarnings("UnusedDeclaration")
 public class Drug {
@@ -10,25 +12,25 @@ public class Drug {
     private String name;
     private String message;
     private String type;
-    private String[] effects;
-    private String[] negatives;
+    private Integer[] effects;
+    private Integer[] negatives;
     private int negativeChance;
-    private boolean smoke;
     private boolean negative;
     private boolean sneak;
     private boolean edible;
+    private Set<String> particles;
 
-    public Drug(ItemStack itemStack, String name, String message, String type, String[] effects,
-                String[] negatives, int negativeChance, boolean smoke, boolean negative,
-                boolean sneak, boolean edible) {
+    public Drug(ItemStack itemStack, String name, String message, String type, Set<String> particles,
+                Integer[] effects, Integer[] negatives, int negativeChance, boolean negative, boolean sneak, boolean
+                        edible) {
         this.itemStack = itemStack;
         this.name = name;
         this.message = message;
         this.type = type;
+        this.particles = particles;
         this.effects = effects;
         this.negatives = negatives;
         this.negativeChance = negativeChance;
-        this.smoke = smoke;
         this.negative = negative;
         this.sneak = sneak;
         this.edible = edible;
@@ -53,16 +55,21 @@ public class Drug {
     }
 
     /**
+     * Get all particles associated with the drug
+     *
+     * @return A collection of particles associated with the drug
+     */
+    public Set<String> getParticles() {
+        return particles;
+    }
+
+    /**
      * Get all effects associated with the drug
      *
      * @return A collection of effects associated with the drug
      */
-    public ArrayList<Integer> getEffects() {
-        ArrayList<Integer> effects = new ArrayList<>();
-        for (String s : this.effects) {
-            effects.add(Integer.parseInt(s));
-        }
-        return effects;
+    public List<Integer> getEffects() {
+        return Arrays.asList(effects);
     }
 
     /**
@@ -70,12 +77,8 @@ public class Drug {
      *
      * @return A collection of negatives associated with the drug
      */
-    public ArrayList<Integer> getNegatives() {
-        ArrayList<Integer> negatives = new ArrayList<>();
-        for (String s : this.negatives) {
-            negatives.add(Integer.parseInt(s));
-        }
-        return negatives;
+    public List<Integer> getNegatives() {
+        return Arrays.asList(negatives);
     }
 
     /**
@@ -94,15 +97,6 @@ public class Drug {
      */
     public String getType() {
         return type;
-    }
-
-    /**
-     * Get whether the drug is smoked
-     *
-     * @return If the drug is smoked
-     */
-    public boolean isSmoke() {
-        return smoke;
     }
 
     /**

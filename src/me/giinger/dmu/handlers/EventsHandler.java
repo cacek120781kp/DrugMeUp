@@ -18,6 +18,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.IOException;
+import java.util.Random;
 
 @SuppressWarnings("UnusedDeclaration")
 public class EventsHandler implements Listener {
@@ -73,6 +74,7 @@ public class EventsHandler implements Listener {
                         if (e.getAction().equals(Action.RIGHT_CLICK_AIR) || e.getAction().equals(Action
                                 .RIGHT_CLICK_BLOCK)) {
                             Drug drug = dHandler.getDrug(item);
+                            // Check for sneak-only drug
                             if (drug.isSneak()) {
                                 if (!player.isSneaking()) {
                                     return;
@@ -82,7 +84,6 @@ public class EventsHandler implements Listener {
                                 // Return because edibles are handled by PlayerItemConsumeEvent
                                 return;
                             }
-
                             pHandler.doDrug(player, dHandler.getDrug(item));
                         }
                     }
@@ -108,7 +109,7 @@ public class EventsHandler implements Listener {
     public void onPlayerChat(AsyncPlayerChatEvent e) {
         if (pHandler.getDrunk().contains(e.getPlayer().getName())) {
             String initial = e.getMessage();
-            String end = pHandler.scramble(initial);
+            String end = scramble(initial);
             e.setMessage(end);
         }
     }
@@ -158,5 +159,20 @@ public class EventsHandler implements Listener {
             }
             pHandler.doDrug(p, dHandler.getDrug(i));
         }
+    }
+
+    private String scramble(String word) {
+        StringBuilder builder = new StringBuilder(word.length());
+        boolean[] used = new boolean[word.length()];
+
+        for (int iScramble = 0; iScramble < word.length(); iScramble++) {
+            int rndIndex;
+            do {
+                rndIndex = new Random().nextInt(word.length());
+            } while (used[rndIndex]);
+            used[rndIndex] = true;
+            builder.append(word.charAt(rndIndex));
+        }
+        return builder.toString();
     }
 }

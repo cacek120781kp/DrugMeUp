@@ -24,6 +24,52 @@
 # 2 - Catch on fire
 # 3 - Heart Attack
 # 4 - Overdose
+# ######### Particles ########
+#
+# ## NOTE: These may not all work! Try things out though ##
+#
+# - Explode
+# - LargeExplode
+# - HugeExplosion
+# - FireworksSpark
+# - Bubble
+# - Splash
+# - Wake
+# - Suspended
+# - DepthSuspend
+# - Crit
+# - MagicCrit
+# - Smoke
+# - LargeSmoke
+# - Spell
+# - InstantSpell
+# - MobSpell
+# - MobSpellAmbient
+# - WitchMagic
+# - DripWater
+# - DripLava
+# - AngryVillager
+# - HappyVillager
+# - TownAura
+# - Note
+# - Portal
+# - EnchantmentTable
+# - Flame
+# - Lava
+# - Footstep
+# - Cloud
+# - RedDust
+# - SnowballPoof
+# - SnowShovel
+# - Slime
+# - Heart
+# - Barrier
+# - IconCrack
+# - BlockCrack
+# - BlockDust
+# - Droplet
+# - Take
+# - MobAppearance
 # ###########################
 Effects:
   Nausea:
@@ -119,34 +165,52 @@ Effects:
   Drunk:
     MaxTime: 50
     MinTime: 15
-DrugIds:
+Drugs:
+  # Basic Format:
+  # MATERIAL_NAME:
+  #   Effect: #,#,#
+  #   Negatives: #,#,#
+  #   NegChance: #
+  #   Type: Random/All/None
+  #   DrugName: "&aColored Drug Name"
+  #   Message: "This message is sent when taking the drug"
+  #   Particles:
+  #     ParticleName:
+  #       Repeat: true/false
+  #       Amount: # of particles displayed
+  #       Location: Body/Head/Feet
+  #     ParticleTwoName:
+  #       Repeat: true/false
+  #       Amount: # of particles displayed
+  #       Location: Body/Head/Feet
   SUGAR:
-    Effect: 2,5
-    Negatives: 1,3
-    NegChance: 30
-    Type: Random
-    Smoke: false
-    DrugName: "&fCocaine"
+    Effect: 2,5     # The effects that will be given for the drug (List of them above)
+    Negatives: 1,3  # The negative effects that will be given for the drug (List above)
+    NegChance: 30   # Chance (X/100) that negatives will be given when taking the drug
+    Type: Random    # Type of application for the drugs (Random = Choose 1 random effect; All = Do all effects; None = No effects)
+    DrugName: "&fCocaine" # The name of the drug
   INK_SACK:2:
     Effect: 0,4
     Negatives: '0'
     Type: All
-    Smoke: true
     DrugName: "&2Marijuana"
+    Particles:
+      Smoke:
+        Repeat: false
+        Amount: 50
+        Location: Head
   RED_MUSHROOM:
     Effect: 0,1,3,6
     Negatives: 1,2,3,4
     NegChance: 20
     Type: Random
-    Smoke: false
     DrugName: "&cShrooms"
-    Message: "You're about to get hella trippy man."
+    Message: "You're about to get hella trippy man." # Optional message to be sent when taking the drug
   POTION:
     Effect: 2,5,7
     Negatives: '1'
     NegChance: 10
     Type: Random
-    Smoke: true
     DrugName: "&bVodka"
   COOKIE:
     Effect: 0,2,4,5
@@ -159,16 +223,35 @@ DrugIds:
     Negatives: 1,2,3,4
     NegChance: 25
     Type: All
-    Smoke: true
     DrugName: "&5Wild &cShrooms"
     MustSneak: true
+    Particles:
+      Smoke:
+        Repeat: false
+        Amount: 15
+        Location: Body
   PAPER:
     Effect: 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
     Negatives: 1,3
     NegChance: 5
     Type: All
-    Smoke: false
     DrugName: "&2L&eS&4D"
+  FEATHER:
+    Effect: 2,5
+    Negatives: 1,3
+    NegChacne: 10
+    Type: All
+    DrugName: "&7Ecstasy"
+    Particles:
+      HappyVillager:
+        Repeat: false # If the particles should repeat while on the drug (or only once)
+        Amount: 20 # Amount of particles to display per second
+        Location: Feet # Location can be Body, Head, or Feet
+      Heart:
+        Repeat: true
+        Interval: 5 # How often should particles play (in ticks - 20 ticks = 1 second)
+        Amount: 15
+        Location: Body
 Chat:
   Broadcast:
     Burning: "&c* %playername% bursts into flames"
@@ -181,11 +264,11 @@ Chat:
   Errors:
     NoPerms: "&cYou don't have permission for that!"
 Options:
-  Worlds: '*'
+  Worlds: '*' # Worlds where drugs can be used (* = All)
   AutoUpdateChecker: true
   AutoUpdateDownload: true
-  SaveOldConfigs: true
+  SaveOldConfigs: true # Save old config files in plugins/DrugMeUp/Old_Configs/
   EnableBroadcastMessages: true
   EnableNegativeEffects: true
-  EnableJumpProtection: true
+  EnableJumpProtection: true # High jump on drug = no fall damage while on drug
 DO_NOT_TOUCH: 0.9.3

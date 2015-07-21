@@ -26,26 +26,56 @@ public class PreDrugTakenEvent extends Event implements Cancellable {
         return handlers;
     }
 
+    /**
+     * Is the drug taking being cancelled
+     *
+     * @return If the drug taking is being cancelled
+     */
     public boolean isCancelled() {
         return cancelled;
     }
 
+    /**
+     * Cancel the taking of the drug
+     *
+     * @param cancel Whether the drug taking should be cancelled
+     */
     public void setCancelled(boolean cancel) {
         this.cancelled = cancel;
     }
 
+    /**
+     * Get the drug being taken
+     *
+     * @return The drug being taken
+     */
     public Drug getDrug() {
         return drug;
     }
 
+    /**
+     * Set the drug being taken
+     *
+     * @param drug The Drug being taken
+     */
     public void setDrug(Drug drug) {
         this.drug = drug;
     }
 
+    /**
+     * Get the player using the Drug
+     *
+     * @return The player using the drug
+     */
     public Player getPlayer() {
         return player;
     }
 
+    /**
+     * Set the player using the drug
+     *
+     * @param player The player using the drug
+     */
     public void setPlayer(Player player) {
         this.player = player;
     }
