@@ -33,21 +33,21 @@ public class PlayerHandler implements Listener {
     }
 
     public void doDrug(Player p, Drug drug) {
-        if (!drug.getType().equalsIgnoreCase("none")) {
-            // Call PreDrugTakenEvent and set variables in case they were changed
-            PreDrugTakenEvent preDrugTakenEvent = new PreDrugTakenEvent(p, drug);
-            Bukkit.getServer().getPluginManager().callEvent(preDrugTakenEvent);
-            drug = preDrugTakenEvent.getDrug();
-            p = preDrugTakenEvent.getPlayer();
-            // Make sure it's not cancelled
-            if (!preDrugTakenEvent.isCancelled()) {
-                // Call DrugTakenEvent
+        // Call PreDrugTakenEvent and set variables in case they were changed
+        PreDrugTakenEvent preDrugTakenEvent = new PreDrugTakenEvent(p, drug);
+        Bukkit.getServer().getPluginManager().callEvent(preDrugTakenEvent);
+        drug = preDrugTakenEvent.getDrug();
+        p = preDrugTakenEvent.getPlayer();
+        // Make sure it's not cancelled
+        if (!preDrugTakenEvent.isCancelled()) {
+            // Call DrugTakenEvent
+            if (!drug.getType().equalsIgnoreCase("none")) {
                 Bukkit.getServer().getPluginManager().callEvent(new DrugTakenEvent(p, drug, doNegatives(p, drug),
                         doEffects(p, drug)));
-                doRemoveDrug(p);
-                doMessage(p, drug);
-                doParticles(p, drug);
             }
+            doRemoveDrug(p);
+            doMessage(p, drug);
+            doParticles(p, drug);
         }
     }
 
@@ -84,14 +84,14 @@ public class PlayerHandler implements Listener {
                     if (!particleRepeat) {
                         switch (particleLocation.toLowerCase()) {
                             case "body":
-                                particle.display(0.3F, 0.3F, 0.3F, 0.05F, particleAmount, p.getLocation(), 30D);
+                                particle.display(0.3F, 0.3F, 0.3F, 0.05F, particleAmount, p.getLocation(), 1.8);
                                 break;
                             case "head":
-                                particle.display(0.3F, 0.3F, 0.3F, 0.05F, particleAmount, p.getEyeLocation(), 30D);
+                                particle.display(0.3F, 0.3F, 0.3F, 0.05F, particleAmount, p.getEyeLocation(), 1.8);
                                 break;
                             case "feet":
                                 particle.display(0.3F, 0.3F, 0.3F, 0.05F, particleAmount, p.getLocation().add(0, -0.5,
-                                        0), 30D);
+                                        0), 1.8);
                                 break;
                         }
                     } else {
@@ -104,15 +104,15 @@ public class PlayerHandler implements Listener {
                             if (onDrugs.contains(p.getName())) {
                                 switch (particleLocation.toLowerCase()) {
                                     case "body":
-                                        particle.display(0.3F, 0.3F, 0.3F, 0.05F, particleAmount, p.getLocation(), 30D);
+                                        particle.display(0.3F, 0.3F, 0.3F, 0.05F, particleAmount, p.getLocation(), 1.8);
                                         break;
                                     case "head":
                                         particle.display(0.3F, 0.3F, 0.3F, 0.05F, particleAmount, p.getEyeLocation(),
-                                                30D);
+                                                1.8);
                                         break;
                                     case "feet":
                                         particle.display(0.3F, 0.3F, 0.3F, 0.05F, particleAmount, p.getLocation().add(0,
-                                                -0.5, 0), 30D);
+                                                -0.5, 0), 1.8);
                                         break;
                                 }
                             } else {
