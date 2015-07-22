@@ -70,13 +70,4 @@ public class PreDrugTakenEvent extends Event implements Cancellable {
     public Player getPlayer() {
         return player;
     }
-
-    /**
-     * Set the player using the drug
-     *
-     * @param player The player using the drug
-     */
-    public void setPlayer(Player player) {
-        this.player = player;
-    }
 }

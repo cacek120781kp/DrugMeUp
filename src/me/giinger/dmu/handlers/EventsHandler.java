@@ -49,7 +49,7 @@ public class EventsHandler implements Listener {
         if (pHandler.getDrunk().contains(p.getName())) {
             pHandler.getDrunk().remove(p.getName());
         }
-        if (pHandler.getOnDrugs().contains(p.getName())) {
+        if (pHandler.getOnDrugs().containsKey(p.getName())) {
             pHandler.getOnDrugs().remove(p.getName());
         }
         if (pHandler.getHeartAttack().contains(p.getName())) {
@@ -80,7 +80,7 @@ public class EventsHandler implements Listener {
                                     return;
                                 }
                             }
-                            if (drug.isEdible()) {
+                            if (drug.isEdible() && player.getFoodLevel() < 20) {
                                 // Return because edibles are handled by PlayerItemConsumeEvent
                                 return;
                             }

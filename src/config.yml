@@ -200,9 +200,9 @@ Drugs:
         Amount: 50
         Location: Head
   RED_MUSHROOM:
-    Effect: 0,1,3,6
+    Effect: 0,1,3,6,14
     Negatives: 1,2,3,4
-    NegChance: 20
+    NegChance: 5
     Type: Random
     DrugName: "&cShrooms"
     Message: "You're about to get hella trippy man." # Optional message to be sent when taking the drug
@@ -212,6 +212,11 @@ Drugs:
     NegChance: 10
     Type: Random
     DrugName: "&bVodka"
+    Particles:
+      DripWater:
+        Repeat: false
+        Amount: 50
+        Location: head
   COOKIE:
     Effect: 0,2,4,5
     Negatives: '0'
@@ -264,11 +269,12 @@ Chat:
   Errors:
     NoPerms: "&cYou don't have permission for that!"
 Options:
-  Worlds: '*' # Worlds where drugs can be used (* = All)
+  Worlds: '*' # Worlds where drugs can be used (* = All; Separate with comma)
   AutoUpdateChecker: true
   AutoUpdateDownload: true
   SaveOldConfigs: true # Save old config files in plugins/DrugMeUp/Old_Configs/
   EnableBroadcastMessages: true
   EnableNegativeEffects: true
   EnableJumpProtection: true # High jump on drug = no fall damage while on drug
+  EnablePlaceProtection: true # Allow/disallow placable drugs to be placed when taking them
 DO_NOT_TOUCH: 0.9.3

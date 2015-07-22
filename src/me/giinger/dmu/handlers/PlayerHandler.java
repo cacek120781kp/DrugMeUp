@@ -12,19 +12,16 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Random;
+import java.util.*;
 
 public class PlayerHandler implements Listener {
 
     private final DrugMeUp plugin;
-    private ArrayList<String> onDrugs = new ArrayList<>();
     private ArrayList<String> isJump = new ArrayList<>();
     private ArrayList<String> drunk = new ArrayList<>();
-    private ArrayList<String> heartattack = new ArrayList<>();
+    private ArrayList<String> heartAttack = new ArrayList<>();
     private ArrayList<String> noPlace = new ArrayList<>();
+    private HashMap<String, Integer> onDrugs = new HashMap<>();
     private HashMap<String, Integer> particleTimers = new HashMap<>();
     private HashMap<String, Integer> drugTimers = new HashMap<>();
 
@@ -32,12 +29,11 @@ public class PlayerHandler implements Listener {
         this.plugin = plugin;
     }
 
-    public void doDrug(Player p, Drug drug) {
+    public void doDrug(final Player p, Drug drug) {
         // Call PreDrugTakenEvent and set variables in case they were changed
         PreDrugTakenEvent preDrugTakenEvent = new PreDrugTakenEvent(p, drug);
         Bukkit.getServer().getPluginManager().callEvent(preDrugTakenEvent);
         drug = preDrugTakenEvent.getDrug();
-        p = preDrugTakenEvent.getPlayer();
         // Make sure it's not cancelled
         if (!preDrugTakenEvent.isCancelled()) {
             // Call DrugTakenEvent
@@ -45,18 +41,27 @@ public class PlayerHandler implements Listener {
                 Bukkit.getServer().getPluginManager().callEvent(new DrugTakenEvent(p, drug, doNegatives(p, drug),
                         doEffects(p, drug)));
             }
+            // Add to noPlace if enabled
+            if (plugin.config.getBoolean("Options.EnablePlaceProtection")) {
+                noPlace.add(p.getName());
+                Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> noPlace.remove(p.getName()), 20L);
+            }
             doRemoveDrug(p);
             doMessage(p, drug);
             doParticles(p, drug);
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void doRemoveDrug(Player p) {
         ItemStack drug = p.getItemInHand();
         if (drug.getAmount() > 1) {
             drug.setAmount(drug.getAmount() - 1);
         } else {
-            p.getInventory().removeItem(drug);
+            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                p.getInventory().removeItem(drug);
+                p.updateInventory();
+            });
         }
     }
 
@@ -101,7 +106,7 @@ public class PlayerHandler implements Listener {
                             particleTimers.remove(p.getName());
                         }
                         particleTimers.put(p.getName(), Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
-                            if (onDrugs.contains(p.getName())) {
+                            if (onDrugs.containsKey(p.getName())) {
                                 switch (particleLocation.toLowerCase()) {
                                     case "body":
                                         particle.display(0.3F, 0.3F, 0.3F, 0.05F, particleAmount, p.getLocation(), 1.8);
@@ -444,21 +449,20 @@ public class PlayerHandler implements Listener {
     }
 
     private void doHeartAttack(final Player p, Drug drug) {
-        String heartAttack = plugin.config.getString(
-                "Chat.Broadcast.HeartAttack").replaceAll(
+        String message = plugin.config.getString("Chat.Broadcast.HeartAttack").replaceAll(
                 "%drugname%", drug.getName()).replaceAll("%playername%", p.getName());
         if (plugin.config.getBoolean("Options.EnableBroadcastMessages")) {
-            Bukkit.broadcastMessage(plugin.colorize(heartAttack));
+            Bukkit.broadcastMessage(plugin.colorize(message));
         } else {
-            p.sendMessage(plugin.colorize(heartAttack));
+            p.sendMessage(plugin.colorize(message));
         }
-        heartattack.add(p.getName());
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> heartattack.remove(p.getName()), 100);
+        heartAttack.add(p.getName());
+        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> heartAttack.remove(p.getName()), 100);
         if (p.getHealth() < 2) {
             p.setHealth(2);
         }
         Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
-            if (heartattack.contains(p.getName())) {
+            if (heartAttack.contains(p.getName())) {
                 if (p.getHealth() < 2) {
                     p.setHealth(2);
                 } else {
@@ -469,15 +473,28 @@ public class PlayerHandler implements Listener {
     }
 
     private void removeEffects(final Player p, int time) {
-        if (!onDrugs.contains(p.getName())) {
-            onDrugs.add(p.getName());
+        time = time / 20;
+        if (!onDrugs.containsKey(p.getName())) {
+            onDrugs.put(p.getName(), time);
+            doDrugTimer(p, time);
         } else {
-            Bukkit.getScheduler().cancelTask(drugTimers.get(p.getName()));
+            if (time > onDrugs.get(p.getName())) {
+                onDrugs.put(p.getName(), time);
+            }
         }
-        drugTimers.put(p.getName(), Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-            onDrugs.remove(p.getName());
-            p.sendMessage(plugin.colorize(plugin.config.getString("Chat.Self.Sober")));
-        }, time));
+    }
+
+    private void doDrugTimer(final Player p, final int time) {
+        System.out.println("Set " + p.getName() + "'s time to " + time + " seconds");
+        drugTimers.put(p.getName(), Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
+            onDrugs.put(p.getName(), onDrugs.get(p.getName()) - 1);
+//            System.out.println(p.getName() + "'s current time: " + onDrugs.get(p.getName()));
+            if (onDrugs.get(p.getName()) <= 0) {
+                onDrugs.remove(p.getName());
+                p.sendMessage(plugin.colorize(plugin.config.getString("Chat.Self.Sober")));
+                Bukkit.getScheduler().cancelTask(drugTimers.get(p.getName()));
+            }
+        }, 20L, 20L));
     }
 
     /**
@@ -488,9 +505,9 @@ public class PlayerHandler implements Listener {
     }
 
     /**
-     * @return A collection of all players on drugs
+     * @return A collection of all players on drugs & their times
      */
-    public Collection<String> getOnDrugs() {
+    public Map<String, Integer> getOnDrugs() {
         return onDrugs;
     }
 
@@ -498,7 +515,7 @@ public class PlayerHandler implements Listener {
      * @return A collection of all players having a heart attack
      */
     public Collection<String> getHeartAttack() {
-        return heartattack;
+        return heartAttack;
     }
 
     /**
