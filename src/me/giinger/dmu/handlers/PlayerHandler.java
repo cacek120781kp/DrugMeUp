@@ -83,20 +83,23 @@ public class PlayerHandler implements Listener {
                 int particleAmount = plugin.config.getInt(pPath + "Amount");
                 String particleLocation = plugin.config.getString(pPath + "Location");
                 boolean particleRepeat = plugin.config.getBoolean(pPath + "Repeat");
+                boolean particleVisible = plugin.config.getBoolean(pPath + "Visible");
                 ParticleEffect particle = ParticleEffect.fromName(s);
                 // Offset-X,Y,Z,Speed,Amount,Location(center),Range
                 if (particle != null) {
                     if (!particleRepeat) {
+                        float visibility = (particleVisible) ? 20F : 1.65F;
                         switch (particleLocation.toLowerCase()) {
                             case "body":
-                                particle.display(0.3F, 0.3F, 0.3F, 0.05F, particleAmount, p.getLocation(), 1.8);
+                                particle.display(0.3F, 0.3F, 0.3F, 0.05F, particleAmount, p.getLocation(), visibility);
                                 break;
                             case "head":
-                                particle.display(0.3F, 0.3F, 0.3F, 0.05F, particleAmount, p.getEyeLocation(), 1.8);
+                                particle.display(0.3F, 0.3F, 0.3F, 0.05F, particleAmount, p.getEyeLocation(),
+                                        visibility);
                                 break;
                             case "feet":
                                 particle.display(0.3F, 0.3F, 0.3F, 0.05F, particleAmount, p.getLocation().add(0, -0.5,
-                                        0), 1.8);
+                                        0), visibility);
                                 break;
                         }
                     } else {
@@ -107,17 +110,19 @@ public class PlayerHandler implements Listener {
                         }
                         particleTimers.put(p.getName(), Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
                             if (onDrugs.containsKey(p.getName())) {
+                                float visibility = (particleVisible) ? 20F : 1.65F;
                                 switch (particleLocation.toLowerCase()) {
                                     case "body":
-                                        particle.display(0.3F, 0.3F, 0.3F, 0.05F, particleAmount, p.getLocation(), 1.8);
+                                        particle.display(0.3F, 0.3F, 0.3F, 0.05F, particleAmount, p.getLocation(),
+                                                visibility);
                                         break;
                                     case "head":
                                         particle.display(0.3F, 0.3F, 0.3F, 0.05F, particleAmount, p.getEyeLocation(),
-                                                1.8);
+                                                visibility);
                                         break;
                                     case "feet":
                                         particle.display(0.3F, 0.3F, 0.3F, 0.05F, particleAmount, p.getLocation().add(0,
-                                                -0.5, 0), 1.8);
+                                                -0.5, 0), visibility);
                                         break;
                                 }
                             } else {
@@ -476,7 +481,7 @@ public class PlayerHandler implements Listener {
         time = time / 20;
         if (!onDrugs.containsKey(p.getName())) {
             onDrugs.put(p.getName(), time);
-            doDrugTimer(p, time);
+            doDrugTimer(p);
         } else {
             if (time > onDrugs.get(p.getName())) {
                 onDrugs.put(p.getName(), time);
@@ -484,8 +489,7 @@ public class PlayerHandler implements Listener {
         }
     }
 
-    private void doDrugTimer(final Player p, final int time) {
-        System.out.println("Set " + p.getName() + "'s time to " + time + " seconds");
+    private void doDrugTimer(final Player p) {
         drugTimers.put(p.getName(), Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
             onDrugs.put(p.getName(), onDrugs.get(p.getName()) - 1);
 //            System.out.println(p.getName() + "'s current time: " + onDrugs.get(p.getName()));
@@ -493,6 +497,7 @@ public class PlayerHandler implements Listener {
                 onDrugs.remove(p.getName());
                 p.sendMessage(plugin.colorize(plugin.config.getString("Chat.Self.Sober")));
                 Bukkit.getScheduler().cancelTask(drugTimers.get(p.getName()));
+                drugTimers.remove(p.getName());
             }
         }, 20L, 20L));
     }

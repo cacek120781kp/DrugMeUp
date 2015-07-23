@@ -66,7 +66,7 @@ public class ConfigHandler {
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line;
             // Only change this if you need to regenerate the config.
-            String check = "DO_NOT_TOUCH: 0.9.1";
+            String check = "DO_NOT_TOUCH: 0.9.3";
             boolean needUpdate = false;
             boolean saveOld = true;
 
