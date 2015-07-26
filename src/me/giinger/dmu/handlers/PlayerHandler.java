@@ -491,11 +491,15 @@ public class PlayerHandler implements Listener {
 
     private void doDrugTimer(final Player p) {
         drugTimers.put(p.getName(), Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
-            onDrugs.put(p.getName(), onDrugs.get(p.getName()) - 1);
-//            System.out.println(p.getName() + "'s current time: " + onDrugs.get(p.getName()));
-            if (onDrugs.get(p.getName()) <= 0) {
-                onDrugs.remove(p.getName());
-                p.sendMessage(plugin.colorize(plugin.config.getString("Chat.Self.Sober")));
+            if (onDrugs.containsKey(p.getName())) {
+                onDrugs.put(p.getName(), onDrugs.get(p.getName()) - 1);
+                if (onDrugs.get(p.getName()) <= 0) {
+                    onDrugs.remove(p.getName());
+                    p.sendMessage(plugin.colorize(plugin.config.getString("Chat.Self.Sober")));
+                    Bukkit.getScheduler().cancelTask(drugTimers.get(p.getName()));
+                    drugTimers.remove(p.getName());
+                }
+            } else {
                 Bukkit.getScheduler().cancelTask(drugTimers.get(p.getName()));
                 drugTimers.remove(p.getName());
             }
