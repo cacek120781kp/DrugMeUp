@@ -40,15 +40,15 @@ public class PlayerHandler implements Listener {
             if (!drug.getType().equalsIgnoreCase("none")) {
                 Bukkit.getServer().getPluginManager().callEvent(new DrugTakenEvent(p, drug, doNegatives(p, drug),
                         doEffects(p, drug)));
+                doRemoveDrug(p);
+                doMessage(p, drug);
+                doParticles(p, drug);
             }
             // Add to noPlace if enabled
             if (plugin.config.getBoolean("Options.EnablePlaceProtection")) {
                 noPlace.add(p.getName());
-                Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> noPlace.remove(p.getName()), 20L);
+                Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> noPlace.remove(p.getName()), 10L);
             }
-            doRemoveDrug(p);
-            doMessage(p, drug);
-            doParticles(p, drug);
         }
     }
 
