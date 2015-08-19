@@ -95,7 +95,8 @@ public class EventsHandler implements Listener {
     @EventHandler
     public void onEntityDamage(EntityDamageEvent e) {
         if (e.getEntity() instanceof Player) {
-            if (pHandler.getIsJump().contains((e.getEntity()).getName())) {
+            Player player = (Player) e.getEntity();
+            if (pHandler.getIsJump().contains(player.getName())) {
                 if (e.getCause().equals(EntityDamageEvent.DamageCause.FALL)) {
                     if (plugin.config.getBoolean("Options.EnableJumpProtection")) {
                         e.setCancelled(true);
