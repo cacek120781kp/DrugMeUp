@@ -281,10 +281,12 @@ Chat:
     HeartAttack: "&c* %playername% had a heart attack!"
   Self:
     TakeDrugs: "&7You have taken %drugname%&7!"
-    Sober: "&aYou begin to feel sober!"
+    Sober: "&7You begin to feel sober!"
+    Cooldown: "&7You have to wait &a%time% &7more seconds to take another drug"
   Errors:
     NoPerms: "&cYou don't have permission for that!"
 Options:
+  DrugCooldown: 0 # How long players should wait to take drugs again
   Worlds: '*' # Worlds where drugs can be used (* = All; Separate with comma)
   AutoUpdateChecker: true
   AutoUpdateDownload: false

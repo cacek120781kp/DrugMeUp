@@ -24,12 +24,23 @@ public class PlayerHandler implements Listener {
     private HashMap<String, Integer> onDrugs = new HashMap<>();
     private HashMap<String, Integer> particleTimers = new HashMap<>();
     private HashMap<String, Integer> drugTimers = new HashMap<>();
+    private HashMap<String, Long> cooldownTimes = new HashMap<>();
 
     public PlayerHandler(DrugMeUp plugin) {
         this.plugin = plugin;
     }
 
     public void doDrug(final Player p, Drug drug) {
+        // Do drug cooldown
+        if (cooldownTimes.containsKey(p.getName())) {
+            if (cooldownTimes.get(p.getName()) - System.currentTimeMillis() > 1000) {
+                p.sendMessage(plugin.colorize(plugin.config.getString("Chat.Self.Cooldown").replaceAll("%time%", String
+                        .valueOf((int) (cooldownTimes.get(p.getName()) - System.currentTimeMillis()) / 1000))));
+                return;
+            }
+        }
+        cooldownTimes.put(p.getName(), System.currentTimeMillis() + (plugin.config.getInt("Options.DrugCooldown")
+                * 1000));
         // Call PreDrugTakenEvent and set variables in case they were changed
         PreDrugTakenEvent preDrugTakenEvent = new PreDrugTakenEvent(p, drug);
         Bukkit.getServer().getPluginManager().callEvent(preDrugTakenEvent);
