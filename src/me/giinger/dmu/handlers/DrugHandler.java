@@ -119,7 +119,6 @@ public class DrugHandler {
      * Gather a collection full of Drugs
      */
     public int gatherDrugs() {
-        int totalDrugs = 0;
         for (String key : config.getConfigurationSection("Drugs").getKeys(false)) {
             String path = "Drugs." + key + ".";
             if (!drugProblem(key)) {
@@ -151,12 +150,11 @@ public class DrugHandler {
                 boolean edible = item.getType().isEdible() || item.getType().name().equalsIgnoreCase("POTION");
                 drugs.put(item, new Drug(item, name, message, type, particles, effects, negatives, negChance,
                         negative, sneak, edible));
-                totalDrugs++;
             } else {
                 plugin.log.info("Problem loading drug '" + key + "'!");
             }
         }
-        return totalDrugs;
+        return drugs.size();
     }
 
     /**
